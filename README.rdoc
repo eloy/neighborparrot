@@ -6,13 +6,20 @@ via Goliath
 == How to test
 
 == RabbitMQ settings
-Setup bin/config with correct values
+Setup bin/config/broker.rb with correct values like
+
+      amqp_config = {
+        :host => 'localhost',
+        :user => 'test',
+        :pass => 'test',
+        :vhost => '/test'
+      }
 
 === Receive messages
-curl -vv "localhost:9000?room=prueba"
+    curl -vv "localhost:9000?room=prueba"
 
 === Send messages
-curl -vv POST -d "room=ba" -d "payload=Hello world!" localhost:9000
+    curl -vv POST -d "room=prueba" -d "payload=Hello world!" localhost:9000
 
 == Contributing to neighborparrot
  
