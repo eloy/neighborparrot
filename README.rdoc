@@ -1,6 +1,18 @@
 = neighborparrot
 
-Description goes here.
+Proxy between RabbitMQ and EventSource 
+via Goliath
+
+== How to test
+
+== RabbitMQ settings
+Setup bin/config with correct values
+
+=== Receive messages
+curl -vv "localhost:9000?room=prueba"
+
+=== Send messages
+curl -vv POST -d "room=ba" -d "payload=Hello world!" localhost:9000
 
 == Contributing to neighborparrot
  
