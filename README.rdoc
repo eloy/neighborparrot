@@ -15,11 +15,26 @@ Setup bin/config/broker.rb with correct values like
         :vhost => '/test'
       }
 
+=== Start server
+
+Server options:
+<pre><code>
+    -e, --environment NAME           Set the execution environment (prod, dev or test) (default: development)
+    -a, --address HOST               Bind to HOST address (default: 0.0.0.0)
+    -p, --port PORT                  Use PORT (default: 9000)
+    -l, --log FILE                   Log to file (default: off)
+    -s, --stdout                     Log to stdout (default: false)
+    -P, --pid FILE                   Pid file (default: off)
+    -d, --daemonize                  Run daemonized in the background (default: false)
+    -v, --verbose                    Enable verbose logging (default: false)
+    -h, --help                       Display help message
+</code></pre>
+
 === Receive messages
-    curl -vv "localhost:9000?room=prueba"
+    curl -d "room=prueba""localhost:9000/subscribe"
 
 === Send messages
-    curl -vv POST -d "room=prueba" -d "payload=Hello world!" localhost:9000
+    curl POST -d "room=prueba" -d "payload=Hello world!" localhost:9000/send
 
 == Contributing to neighborparrot
  

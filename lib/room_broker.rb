@@ -35,6 +35,7 @@ class RoomBroker
     @channel.on_error(&method(:handle_channel_exception))
     @queue = @channel.queue(@room, :auto_delete => true).bind(@provider_queue)
     @queue.subscribe(&method(:handle_message))
+    @consumer_channel.push "Welcome".to_json
   end
 
   # Reply rabbitmq paylod to room members
