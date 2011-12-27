@@ -1,0 +1,23 @@
+<html>
+<head>
+<!--  <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4/jquery.min.js"></script> -->
+<script type="text/javascript" src="http://code.jquery.com/jquery-1.7.1.js"></script> 
+  <script type="text/javascript" src="https://raw.github.com/rwldrn/jquery.eventsource/master/jquery.eventsource.js"></script>
+</head>
+<body>
+  <script>
+    $.eventsource({
+        label: "event-source-label", 
+        url: "/test",
+        dataType: "json", 
+        open: function( data ) {    
+            document.body.innerHTML += "connected" + '<br />';
+        },
+
+        message: function( data ) {
+            document.body.innerHTML += data + '<br />';
+        }
+    });
+  </script>
+</body>
+</html>

@@ -1,4 +1,5 @@
 require 'goliath'
+require 'goliath/rack/templates'
 require 'goliath/plugins/latency'
 require 'json'
 require 'pp'
@@ -8,11 +9,15 @@ require 'pp'
 class Broker < Goliath::API
   use Goliath::Rack::Params
   use Goliath::Rack::Render, 'json'
-  use Goliath::Rack::Tracer
+  # use Goliath::Rack::Tracer
   use Goliath::Rack::DefaultMimeType
   use Goliath::Rack::Heartbeat
   use Goliath::Rack::Validation::RequestMethod, %w(GET POST)
-  use Goliath::Rack::Validation::RequiredParam, {:key => 'room'}
+  include Goliath::Rack::Templates      # render templated files from ./views
+
+  use Rack::Static, :urls => ["/favicon.ico", "/index.html"], :root => Goliath::Application.app_path("public")
+
+  # use Goliath::Rack::Validation::RequiredParam, {:key => 'room'}
 
   # plugin Goliath::Plugin::Latency       # output reactor latency every second
 
@@ -75,12 +80,24 @@ class Broker < Goliath::API
     [200, headers , Goliath::Response::STREAMING]
   end
 
+  def test(env)
+    EM.add_periodic_timer(1) {
+      data = Time::now
+      msg = "data: #{data.to_json}\n\n"
+      env.stream_send(msg)
+    }
+
+    streaming_response(200, {'Content-Type' => 'text/event-stream'})
+  end
+
   # Route request
   def response(env)
     logger.info "routing #{env['PATH_INFO']}"
     case env['PATH_INFO']
+    # when '/'              then [200, {}, haml(:root)]
     when '/subscribe'     then subscribe_to_room(env)
     when '/send'          then send_msg_to_room(env)
+    when '/test'          then test(env)
     else                  raise Goliath::Validation::NotFoundError
     end
   end
