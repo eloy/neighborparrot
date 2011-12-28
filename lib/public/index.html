@@ -1,23 +1,24 @@
 <html>
 <head>
-<!--  <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4/jquery.min.js"></script> -->
-<script type="text/javascript" src="http://code.jquery.com/jquery-1.7.1.js"></script> 
-  <script type="text/javascript" src="https://raw.github.com/rwldrn/jquery.eventsource/master/jquery.eventsource.js"></script>
+  <script type="text/javascript" src="https://raw.github.com/Yaffle/EventSource/master/eventsource.js"></script>
 </head>
 <body>
   <script>
-    $.eventsource({
-        label: "event-source-label", 
-        url: "/test",
-        dataType: "json", 
-        open: function( data ) {    
-            document.body.innerHTML += "connected" + '<br />';
-        },
-
-        message: function( data ) {
-            document.body.innerHTML += data + '<br />';
-        }
-    });
+    var es = new EventSource('/test');
+      es.addEventListener('open', function (event) {
+        var div = document.createElement('div');
+        div.innerHTML = 'opened: ' + es.url;
+        document.body.appendChild(div);
+      }, false);
+      es.addEventListener('message', function (event) {
+        document.body.appendChild(document.createTextNode(event.data));
+      }, false);
+      es.addEventListener('error', function (event) {
+        var div = document.createElement('div');
+        div.innerHTML = 'closed';
+        document.body.appendChild(div);
+      }, false);
   </script>
+  <div id="messages"></div>
 </body>
 </html>

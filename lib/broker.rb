@@ -15,7 +15,7 @@ class Broker < Goliath::API
   use Goliath::Rack::Validation::RequestMethod, %w(GET POST)
   include Goliath::Rack::Templates      # render templated files from ./views
 
-  use Rack::Static, :urls => ["/favicon.ico", "/index.html"], :root => Goliath::Application.app_path("public")
+  use Rack::Static, :urls => ["/favicon.ico", "/index.html", "/remy.html"], :root => Goliath::Application.app_path("public")
 
   # use Goliath::Rack::Validation::RequiredParam, {:key => 'room'}
 
@@ -59,7 +59,7 @@ class Broker < Goliath::API
 
     # Init connection
     EM.add_timer(1) do
-      init_stream =":" << Array.new(2048, " ").join << "\n"
+      init_stream =": " << Array.new(2048, " ").join << "\n\n"
       env.stream_send(init_stream)
     end
 
@@ -81,13 +81,28 @@ class Broker < Goliath::API
   end
 
   def test(env)
+    # Init connection
+    EM.add_timer(1) do
+      logger.info "init connection"
+      init_stream =":" << Array.new(2048, " ").join << "\n\n\n"
+      env.stream_send(init_stream)
+    end
+
+
     EM.add_periodic_timer(1) {
       data = Time::now
-      msg = "data: #{data.to_json}\n\n"
+      msg = "data: #{data.to_json}\n\n\n\n"
       env.stream_send(msg)
     }
 
-    streaming_response(200, {'Content-Type' => 'text/event-stream'})
+      headers = {
+      'Access-Control-Allow-Origin' => '*',
+      'Content-Type' => 'text/event-stream',
+      'Cache-Control' => 'no-cache',
+      'Connection' => 'keep-alive'
+    }
+
+    streaming_response(200, headers)
   end
 
   # Route request
