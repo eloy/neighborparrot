@@ -2,44 +2,10 @@
 <html>
 <head>
   <title>Neighborparrot example</title>
-  <script src="https://raw.github.com/Yaffle/EventSource/master/eventsource.js"></script>
   <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
-
-<script>
-    $(document).ready(function() {
-        var subscribe_url = 'http://localhost:9000/subscribe?room=prueba'
-        var send_url = 'http://localhost:9000/send'
-
-        var es = new EventSource(subscribe_url);
-        es.addEventListener('open', function (event) {
-           $('#status').html('connection open');
-        }, false);
-        
-        es.addEventListener('message', function (event) {
-           $('#messages').append("<p>Msg: " + event.data +"</p>")
-        }, false);
-        
-        es.addEventListener('error', function (event) {
-           $("#status").html('connection error');
-        }, false);
-
-        $('#send_form').submit(function(e) {
-           $.post(send_url, $(this).serialize());
-           e.preventDefault();
-        });
-    
-    });
-</script>
-
-
-
+  <script type="text/javascript" src="http://superchat.dev:9000/javascripts/parrot.js"></script>
 </head>
-
-
-
 <body>
-
-
 <h1>Neighborparrot Chat</h1>
 <span id="status"></span>
 <form id="send_form">
@@ -50,9 +16,9 @@
 </form>
 
 
-<div id="messages">
-</div>
-
+<iframe id="source" src="http://superchat.dev:9000/index.html">
+  
+</iframe>
 
 </body>
 </html>

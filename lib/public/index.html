@@ -1,24 +1,11 @@
 <html>
 <head>
-  <script type="text/javascript" src="https://raw.github.com/Yaffle/EventSource/master/eventsource.js"></script>
+  <META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE">
+  <script type="text/javascript" src="/javascripts/jquery.min.js"></script>
+  <script type="text/javascript" src="/javascripts/eventsource.js"></script>
+  <script type="text/javascript" src="/javascripts/jquery.ba-postmessage.js"></script>
+  <script type="text/javascript" src="http://superchat.dev:9000/javascripts/broker.js"></script>
 </head>
 <body>
-  <script>
-    var es = new EventSource('/test');
-      es.addEventListener('open', function (event) {
-        var div = document.createElement('div');
-        div.innerHTML = 'opened: ' + es.url;
-        document.body.appendChild(div);
-      }, false);
-      es.addEventListener('message', function (event) {
-        document.body.appendChild(document.createTextNode(event.data));
-      }, false);
-      es.addEventListener('error', function (event) {
-        var div = document.createElement('div');
-        div.innerHTML = 'closed';
-        document.body.appendChild(div);
-      }, false);
-  </script>
-  <div id="messages"></div>
 </body>
 </html>

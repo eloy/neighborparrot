@@ -1,5 +1,0 @@
-#!/usr/bin/env ruby
-
-require "../lib/room_broker_factory.rb"
-require "../lib/room_broker.rb"
-require "../lib/broker.rb"

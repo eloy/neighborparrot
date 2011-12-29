@@ -1,5 +1,4 @@
 require 'goliath'
-require 'goliath/rack/templates'
 require 'goliath/plugins/latency'
 require 'json'
 require 'pp'
@@ -7,15 +6,13 @@ require 'pp'
 # Broker Class
 # rabbitmq proxy for Event Service
 class Broker < Goliath::API
+  use Rack::Static, :urls => ["/favicon.ico", "/javascript", "/index.html"], :root => Goliath::Application.app_path("public")
   use Goliath::Rack::Params
   use Goliath::Rack::Render, 'json'
   # use Goliath::Rack::Tracer
   use Goliath::Rack::DefaultMimeType
   use Goliath::Rack::Heartbeat
   use Goliath::Rack::Validation::RequestMethod, %w(GET POST)
-  include Goliath::Rack::Templates      # render templated files from ./views
-
-  use Rack::Static, :urls => ["/favicon.ico", "/index.html", "/remy.html"], :root => Goliath::Application.app_path("public")
 
   # use Goliath::Rack::Validation::RequiredParam, {:key => 'room'}
 
@@ -84,14 +81,13 @@ class Broker < Goliath::API
     # Init connection
     EM.add_timer(1) do
       logger.info "init connection"
-      init_stream =":" << Array.new(2048, " ").join << "\n\n\n"
+      init_stream =":" << Array.new(2048, " ").join << "\n\n"
       env.stream_send(init_stream)
     end
 
-
     EM.add_periodic_timer(1) {
       data = Time::now
-      msg = "data: #{data.to_json}\n\n\n\n"
+      msg = "data: #{data}\n\n"
       env.stream_send(msg)
     }
 
@@ -109,7 +105,6 @@ class Broker < Goliath::API
   def response(env)
     logger.info "routing #{env['PATH_INFO']}"
     case env['PATH_INFO']
-    # when '/'              then [200, {}, haml(:root)]
     when '/subscribe'     then subscribe_to_room(env)
     when '/send'          then send_msg_to_room(env)
     when '/test'          then test(env)
