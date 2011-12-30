@@ -19,13 +19,27 @@ Setup bin/config/broker.rb with correct values like
 
 Server options:
 <pre><code>
+Server options:
     -e, --environment NAME           Set the execution environment (prod, dev or test) (default: development)
     -a, --address HOST               Bind to HOST address (default: 0.0.0.0)
     -p, --port PORT                  Use PORT (default: 9000)
+    -S, --socket FILE                Bind to unix domain socket
+
+Daemon options:
+    -u, --user USER                  Run as specified user
+    -c, --config FILE                Config file (default: ./config/<server>.rb)
+    -d, --daemonize                  Run daemonized in the background (default: false)
     -l, --log FILE                   Log to file (default: off)
     -s, --stdout                     Log to stdout (default: false)
     -P, --pid FILE                   Pid file (default: off)
-    -d, --daemonize                  Run daemonized in the background (default: false)
+
+SSL options:
+        --ssl                        Enables SSL (default: off)
+        --ssl-key FILE               Path to private key
+        --ssl-cert FILE              Path to certificate
+        --ssl-verify                 Enables SSL certificate verification
+
+Common options:
     -v, --verbose                    Enable verbose logging (default: false)
     -h, --help                       Display help message
 </code></pre>
@@ -35,6 +49,28 @@ Server options:
 
 === Send messages
     curl POST -d "room=prueba" -d "payload=Hello world!" localhost:9000/send
+
+== Deploy in ubuntu
+
+<pre><code>
+sudo aptitude install ruby1.9.1 ruby1.9.1-dev git-core erlang-nox
+ln -s /usr/bin/ruby1.9.1 /usr/bin/ruby
+ln -s /usr/bin/gem1.9.1 /usr/bin/gem
+sudo gem install puppet
+sudo addgroup puppet
+sudo gem install puppet-module
+cd /tmp
+http://www.rabbitmq.com/releases/rabbitmq-server/v2.7.1/rabbitmq-server_2.7.1-1_all.deb && dpkg -i rabbitmq-server_2.7.1-1_all.deb
+mkdir /etc/puppet/modules
+cd /etc/puppet/modules && puppet-module install puppetlabs/rabbitmq && cd 
+export PATH=${PATH}:/var/lib/gems/1.9.1/bin
+source /etc/enviroment
+git clone git@github.com:harlock/neighborparrot.git /tmp/neighborparrot
+sudo mv /tmp/neighborparrot /var/local/neighborparrot
+ln -s /var/local/neighborparrot/puppet/neighborparrot /etc/puppet/modules/neighborparrot
+sudo puppet apply -e "include neighborparrot"
+</code></pre>
+
 
 == Contributing to neighborparrot
  
