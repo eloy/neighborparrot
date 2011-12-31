@@ -6,7 +6,7 @@ require 'pp'
 # Broker Class
 # rabbitmq proxy for Event Service
 class Broker < Goliath::API
-  use Rack::Static, :urls => ["/favicon.ico", "/javascript", "/index.html"], :root => Goliath::Application.app_path("public")
+  use Rack::Static, :urls => ["/favicon.ico", "/javascript", "/tests", "/index.html"], :root => Goliath::Application.app_path("public")
   use Goliath::Rack::Params
   use Goliath::Rack::Render, 'json'
   # use Goliath::Rack::Tracer
@@ -14,13 +14,13 @@ class Broker < Goliath::API
   use Goliath::Rack::Heartbeat
   use Goliath::Rack::Validation::RequestMethod, %w(GET POST)
 
-  # use Goliath::Rack::Validation::RequiredParam, {:key => 'room'}
+  # use Goliath::Rack::Validation::RequiredParam, {:key => 'channel'}
 
   # plugin Goliath::Plugin::Latency       # output reactor latency every second
 
 
   # on close action
-  # TODO must close RoomWorker connection
+  # TODO must close ChannelWorker connection
   def on_close(env)
     # This is just to make sure if the Heartbeat fires we don't try
     # to close a connection.
@@ -32,27 +32,27 @@ class Broker < Goliath::API
 
 
   # Process POST request
-  # Send message to the RoomBroker
-  # Generate a room uuid
-  def send_msg_to_room(env)
+  # Send message to the ChannelBroker
+  # Generate a channel uuid
+  def send_msg_to_channel(env)
     pp env.params
     logger.info "Processing request POST"
-    room = env.params['room']
+    channel = env.params['channel']
     id = env.params['id']
     data = env.params['data']
     payload = "id: #{id}\ndata: #{data}\n"
-    broker = RoomBrokerFactory.get(env, room)
+    broker = ChannelBrokerFactory.get(env, channel)
     broker.publish(payload)
     [200, {}, 'Ok']
   end
 
 
   # Process subscriptions
-  # Get the RoomBroker with the RoomBrokerFactory
-  # @return [Stream] stream for this room
-  def subscribe_to_room(env)
+  # Get the ChannelBroker with the ChannelBrokerFactory
+  # @return [Stream] stream for this channel
+  def subscribe_to_channel(env)
     logger.info "Processing request get"
-    room = env.params['room']
+    channel = env.params['channel']
 
     # Init connection
     EM.add_timer(1) do
@@ -60,11 +60,10 @@ class Broker < Goliath::API
       env.stream_send(init_stream)
     end
 
-    broker = RoomBrokerFactory.get(env, room)
+    broker = ChannelBrokerFactory.get(env, channel)
     broker.consumer_channel.subscribe do |msg|
-      msg = msg << "\n"
       logger.info "Sending: #{msg}"
-      env.stream_send(msg)
+      env.stream_send "data:#{msg}\n\n"
     end
 
     headers = {
@@ -77,38 +76,14 @@ class Broker < Goliath::API
     [200, headers , Goliath::Response::STREAMING]
   end
 
-  def test(env)
-    # Init connection
-    EM.add_timer(1) do
-      logger.info "init connection"
-      init_stream =":" << Array.new(2048, " ").join << "\n\n"
-      env.stream_send(init_stream)
-    end
-
-    EM.add_periodic_timer(1) {
-      data = Time::now
-      msg = "data: #{data}\n\n"
-      env.stream_send(msg)
-    }
-
-      headers = {
-      'Access-Control-Allow-Origin' => '*',
-      'Content-Type' => 'text/event-stream',
-      'Cache-Control' => 'no-cache',
-      'Connection' => 'keep-alive'
-    }
-
-    streaming_response(200, headers)
-  end
 
   # Route request
   def response(env)
     logger.info "routing #{env['PATH_INFO']}"
     case env['PATH_INFO']
-    when '/subscribe'     then subscribe_to_room(env)
-    when '/send'          then send_msg_to_room(env)
-    when '/test'          then test(env)
-    else                  raise Goliath::Validation::NotFoundError
+    when '/open'     then subscribe_to_channel(env)
+    when '/send'     then send_msg_to_channel(env)
+    else             raise Goliath::Validation::NotFoundError
     end
   end
 end

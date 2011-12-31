@@ -2,13 +2,13 @@ require "rubygems"
 require "amqp"
 
 # Gets messages from rabbitmq and sends to
-# room members via Event Machine channel
-class RoomBroker
+# channel members via Event Machine channel
+class ChannelBroker
   attr_reader :consumer_channel
 
   # Initialize EM channel for internal distribution
-  def initialize(connection, room = AMQ::Protocol::EMPTY_STRING)
-    @room = room
+  def initialize(connection, channel = AMQ::Protocol::EMPTY_STRING)
+    @channel = channel
     @connection = connection
     @consumer_channel = EM::Channel.new
   end
@@ -27,18 +27,18 @@ class RoomBroker
     @provider_queue.publish(payload)
   end
 
-  # Connect to the given room
+  # Connect to the given channel
   # and setup connection handler
   def start
-    @provider_queue = AMQP::Channel.new(@connection).fanout(@room)
+    @provider_queue = AMQP::Channel.new(@connection).fanout(@channel)
     @channel = AMQP::Channel.new(@connection)
     @channel.on_error(&method(:handle_channel_exception))
-    @queue = @channel.queue(@room, :auto_delete => true).bind(@provider_queue)
+    @queue = @channel.queue(@channel, :auto_delete => true).bind(@provider_queue)
     @queue.subscribe(&method(:handle_message))
     @consumer_channel.push "Welcome".to_json
   end
 
-  # Reply rabbitmq paylod to room members
+  # Reply rabbitmq paylod to channel members
   def handle_message(metadata, payload)
     @consumer_channel.push payload
   end

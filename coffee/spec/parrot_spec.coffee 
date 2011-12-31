@@ -1,0 +1,9 @@
+describe "Parrot", ->
+  it "Should create a iframe on create", ->
+    parrot = new Parrot(app.dummy)
+    parrot.open("test-channel")
+    expect($("iframe#parrot-iframe").length).toEqual(1)
+    parrot.close()
+
+
+
