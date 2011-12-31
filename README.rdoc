@@ -45,10 +45,10 @@ Common options:
 </code></pre>
 
 === Receive messages
-    curl -d "room=prueba""localhost:9000/subscribe"
+    curl -d "channel=prueba""localhost:9000/open"
 
 === Send messages
-    curl POST -d "room=prueba" -d "payload=Hello world!" localhost:9000/send
+    curl POST -d "channel=prueba" -d "payload=Hello world!" localhost:9000/open
 
 == Deploy in ubuntu
 

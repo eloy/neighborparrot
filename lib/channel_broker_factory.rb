@@ -12,10 +12,13 @@ class ChannelBrokerFactory
       return @@channel_brokers[channel]
     end
 
-    worker = ChannelBroker.new(env.connection, channel)
-    worker.start
-    @@channel_brokers[channel] = worker
-    return worker
+    # For RabbitMQ brokers
+    # worker = AMQPChannelBroker.new(env, channel)
+    # worker.start
+
+    broker = ChannelBroker.new(env, channel)
+    @@channel_brokers[channel] = broker
+    return broker
   end
 
   def self.getTestChannel

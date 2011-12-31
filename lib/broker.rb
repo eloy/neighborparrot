@@ -25,7 +25,6 @@ class Broker < Goliath::API
     # This is just to make sure if the Heartbeat fires we don't try
     # to close a connection.
     return unless env['subscription']
-
     env.channel.unsubscribe(env['subscription'])
     env.logger.info "Stream connection closed."
   end
@@ -36,13 +35,10 @@ class Broker < Goliath::API
   # Generate a channel uuid
   def send_msg_to_channel(env)
     pp env.params
-    logger.info "Processing request POST"
     channel = env.params['channel']
-    id = env.params['id']
     data = env.params['data']
-    payload = "id: #{id}\ndata: #{data}\n"
     broker = ChannelBrokerFactory.get(env, channel)
-    broker.publish(payload)
+    broker.publish(data)
     [200, {}, 'Ok']
   end
 
@@ -82,7 +78,7 @@ class Broker < Goliath::API
     logger.info "routing #{env['PATH_INFO']}"
     case env['PATH_INFO']
     when '/open'     then subscribe_to_channel(env)
-    when '/send'     then send_msg_to_channel(env)
+    when '/post'     then send_msg_to_channel(env)
     else             raise Goliath::Validation::NotFoundError
     end
   end

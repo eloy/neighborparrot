@@ -1,5 +1,7 @@
 # Neighborparrot server deploy
+# Run with puppet apply -e "include neighborparrot"
 #=======================================
+
 class neighborparrot {
   
   # Setup app path
@@ -65,7 +67,7 @@ class neighborparrot {
   }
 
   # Create user
-  exec { "rabbitmqctl set_permissions -p /${rabbit_vhost} ${rabbit_user} \"^${rabbit_user}-.*\" \".*\" \".*\"":
+  exec { "rabbitmqctl set_permissions -p /${rabbit_vhost} ${rabbit_user} \".*\" \".*\" \".*\"":
     unless => "rabbitmqctl list_permissions -p /${rabbit_vhost} | grep ${rabbit_user} -q"
   }
 
