@@ -26,10 +26,10 @@ class Broker < Goliath::API
       if env['SUBSCRIBER']
         env['SUBSCRIBER'][:broker].consumer_channel.unsubscribe(env['SUBSCRIBER'][:sid])
       end
+      env.logger.info "Stream connection closed"
     rescue
-      logger.error $!
+      env.logger.error $!
     end
-    logger.info "Stream connection closed"
   end
 
 
@@ -50,33 +50,40 @@ class Broker < Goliath::API
   # @return [Stream] stream for this channel
   def subscribe_to_channel(env)
     logger.info "Processing request get"
+
     channel = env.params['channel']
     key = env.params['key']
     env['SUBSCRIBER'] = { :key => key, :channel => channel }
 
-    # Init connection
-    EM.add_timer(1) do
-      init_stream =": " << Array.new(2048, " ").join << "\n\n"
-      env.stream_send(init_stream)
+    begin
+      # Init connection
+      EM.add_timer(1) do
+        init_stream =": " << Array.new(2048, " ").join << "\n\n"
+        env.stream_send(init_stream)
+      end
+
+      broker = ChannelBrokerFactory.get(env, channel)
+      sid = broker.consumer_channel.subscribe do |msg|
+        logger.info "Sending: #{msg}"
+        env.stream_send "data:#{msg}\n\n"
+      end
+
+      env['SUBSCRIBER'][:sid] = sid
+      env['SUBSCRIBER'][:broker] = broker
+
+      headers = {
+        'Access-Control-Allow-Origin' => '*',
+        'Content-Type' => 'text/event-stream',
+        'Cache-Control' => 'no-cache',
+        'Connection' => 'keep-alive'
+      }
+
+      [200, headers , Goliath::Response::STREAMING]
+
+    rescue
+      env.logger.error $!
+      env.close
     end
-
-    broker = ChannelBrokerFactory.get(env, channel)
-    sid = broker.consumer_channel.subscribe do |msg|
-      logger.info "Sending: #{msg}"
-      env.stream_send "data:#{msg}\n\n"
-    end
-
-    env['SUBSCRIBER'][:sid] = sid
-    env['SUBSCRIBER'][:broker] = broker
-
-    headers = {
-      'Access-Control-Allow-Origin' => '*',
-      'Content-Type' => 'text/event-stream',
-      'Cache-Control' => 'no-cache',
-      'Connection' => 'keep-alive'
-    }
-
-    [200, headers , Goliath::Response::STREAMING]
   end
 
   # Route request

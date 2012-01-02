@@ -11,13 +11,6 @@ class TestChannelBroker
     start()
   end
 
-  # Unsubscribe when no more users in this channel
-  # TODO
-  def unsubscribe
-    # @channel.unsubscribe()
-  end
-
-
   # Connect to the given channel
   # and setup connection handler
   def start

@@ -17,4 +17,4 @@ group :test do
 end
 
 gem 'goliath'
-gem 'amqp'
+#gem 'amqp'
