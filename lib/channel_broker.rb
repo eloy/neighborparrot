@@ -14,7 +14,6 @@ class ChannelBroker
 
   # Broadcast data to customers
   def publish(data)
-    @logger.info "Sending data: #{data}"
     @consumer_channel.push data
   end
 end

@@ -22,7 +22,14 @@ class Broker < Goliath::API
   # on close action
   # TODO must close ChannelWorker connection
   def on_close(env)
-    #env.logger.info "Stream connection closed from #{env.params['channel']}."
+    begin
+      if env['SUBSCRIBER']
+        env['SUBSCRIBER'][:broker].consumer_channel.unsubscribe(env['SUBSCRIBER'][:sid])
+      end
+    rescue
+      logger.error $!
+    end
+    logger.info "Stream connection closed"
   end
 
 
@@ -44,6 +51,8 @@ class Broker < Goliath::API
   def subscribe_to_channel(env)
     logger.info "Processing request get"
     channel = env.params['channel']
+    key = env.params['key']
+    env['SUBSCRIBER'] = { :key => key, :channel => channel }
 
     # Init connection
     EM.add_timer(1) do
@@ -52,10 +61,13 @@ class Broker < Goliath::API
     end
 
     broker = ChannelBrokerFactory.get(env, channel)
-    broker.consumer_channel.subscribe do |msg|
+    sid = broker.consumer_channel.subscribe do |msg|
       logger.info "Sending: #{msg}"
       env.stream_send "data:#{msg}\n\n"
     end
+
+    env['SUBSCRIBER'][:sid] = sid
+    env['SUBSCRIBER'][:broker] = broker
 
     headers = {
       'Access-Control-Allow-Origin' => '*',
@@ -66,7 +78,6 @@ class Broker < Goliath::API
 
     [200, headers , Goliath::Response::STREAMING]
   end
-
 
   # Route request
   def response(env)
