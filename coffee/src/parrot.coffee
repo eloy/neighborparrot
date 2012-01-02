@@ -4,6 +4,7 @@ class window.Parrot
   @brokerSrc = "#{@brokerHost}/index.html"
   @debug = false
 
+
   # Parrot constructot
   # @param [String] channel name
   # @param [Function] onmessage: callback called when receive a message
@@ -16,9 +17,17 @@ class window.Parrot
     @onconnect = onconnect
     @onerror = onerror
     @createIFrame()
-    $.receiveMessage @, @dispatch, Parrot.brokerHost
+    @addMessageListener()
     @log "Constructor create successful with channel #{channel}"
 
+  addMessageListener: ->
+    _this = @
+    bounder = (e) -> _this.dispatch.call _this, e
+    if window['addEventListener']
+      window.addEventListener 'message', bounder
+    else
+      window.attachEvent 'onmessage', bounder
+    # TODO: if not supported??
 
   # Convenient function for logging
   log: (msg) ->
@@ -33,6 +42,7 @@ class window.Parrot
 
   # Receive the event and call the desired callback
   dispatch: (event) ->
+    return if event.origin != Parrot.brokerHost
     msg = event.data
     @log "Dispatching message: @{msg}"
     if msg.match("^data:")
