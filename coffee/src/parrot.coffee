@@ -1,6 +1,6 @@
 # NeighborParrot client
 class window.Parrot
-  @brokerHost = "http://superchat.dev:9000"
+  @brokerHost = "http://neighborparrot.net"
   @brokerSrc = "#{@brokerHost}/index.html"
   @debug = false
 

@@ -1,21 +1,8 @@
 = neighborparrot
 
-Proxy between RabbitMQ and EventSource 
-via Goliath
+Event source broker
 
 == How to test
-
-== RabbitMQ settings
-Setup bin/config/broker.rb with correct values like
-
-      amqp_config = {
-        :host => 'localhost',
-        :user => 'test',
-        :pass => 'test',
-        :vhost => '/test'
-      }
-
-=== Start server
 
 Server options:
 <pre><code>
@@ -44,25 +31,15 @@ Common options:
     -h, --help                       Display help message
 </code></pre>
 
-=== Receive messages
-    curl -d "channel=prueba""localhost:9000/open"
-
-=== Send messages
-    curl POST -d "channel=prueba" -d "payload=Hello world!" localhost:9000/open
-
-== Deploy in ubuntu
-
+== Deploy in ubuntus
 <pre><code>
-sudo aptitude install ruby1.9.1 ruby1.9.1-dev git-core erlang-nox
+sudo aptitude install ruby1.9.1 ruby1.9.1-dev git-core build-essential
 ln -s /usr/bin/ruby1.9.1 /usr/bin/ruby
 ln -s /usr/bin/gem1.9.1 /usr/bin/gem
 sudo gem install puppet
 sudo addgroup puppet
-sudo gem install puppet-module
-cd /tmp
-http://www.rabbitmq.com/releases/rabbitmq-server/v2.7.1/rabbitmq-server_2.7.1-1_all.deb && dpkg -i rabbitmq-server_2.7.1-1_all.deb
-mkdir /etc/puppet/modules
-cd /etc/puppet/modules && puppet-module install puppetlabs/rabbitmq && cd 
+#sudo gem install puppet-module
+mkdir -p /etc/puppet/modules
 export PATH=${PATH}:/var/lib/gems/1.9.1/bin
 source /etc/enviroment
 git clone git@github.com:harlock/neighborparrot.git /tmp/neighborparrot
@@ -70,6 +47,27 @@ sudo mv /tmp/neighborparrot /var/local/neighborparrot
 ln -s /var/local/neighborparrot/puppet/neighborparrot /etc/puppet/modules/neighborparrot
 sudo puppet apply -e "include neighborparrot"
 </code></pre>
+
+== For Rabbit MQ
+sudo aptitude install erlang-nox
+cd /tmp
+http://www.rabbitmq.com/releases/rabbitmq-server/v2.7.1/rabbitmq-server_2.7.1-1_all.deb && dpkg -i rabbitmq-server_2.7.1-1_all.deb
+
+=== Install
+<pre><code>
+
+</code></pre>
+=== RabbitMQ settings
+Setup bin/config/broker.rb with correct values like
+
+      amqp_config = {
+        :host => 'localhost',
+        :user => 'test',
+        :pass => 'test',
+        :vhost => '/test'
+      }
+
+=== Start server
 
 
 == Contributing to neighborparrot
