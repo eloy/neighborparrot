@@ -22,11 +22,7 @@ class Broker < Goliath::API
   # on close action
   # TODO must close ChannelWorker connection
   def on_close(env)
-    # This is just to make sure if the Heartbeat fires we don't try
-    # to close a connection.
-    return unless env['subscription']
-    env.channel.unsubscribe(env['subscription'])
-    env.logger.info "Stream connection closed."
+    #env.logger.info "Stream connection closed from #{env.params['channel']}."
   end
 
 
@@ -34,7 +30,6 @@ class Broker < Goliath::API
   # Send message to the ChannelBroker
   # Generate a channel uuid
   def send_msg_to_channel(env)
-    pp env.params
     channel = env.params['channel']
     data = env.params['data']
     broker = ChannelBrokerFactory.get(env, channel)
