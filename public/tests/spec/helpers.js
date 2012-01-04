@@ -1,5 +1,9 @@
 (function() {
-  var dummy, _ref;
+  var dummy, serverParam, _ref;
+
+  serverParam = getParam('server');
+
+  if (serverParam) Parrot.brokerHost = serverParam;
 
   dummy = function() {};
 

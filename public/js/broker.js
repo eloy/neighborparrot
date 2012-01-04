@@ -1,21 +1,18 @@
 (function() {
   var _ref;
 
+  window['getParam'] = function(name) {
+    var results;
+    results = new RegExp('[\\?&]' + name + '=([^&#]*)').exec(window.location.href);
+    if (results && results.length > 0) return results[1];
+  };
+
   window.Broker = (function() {
 
     function Broker() {
-      this.channel = this.getParam('channel');
-      this.parent_url = this.getParam('parent_url');
+      this.channel = window.getParam('channel');
+      this.parent_url = window.getParam('parent_url');
     }
-
-    Broker.prototype.getParam = function(name) {
-      var results;
-      results = new RegExp('[\\?&]' + name + '=([^&#]*)').exec(window.location.href);
-      if (results && results.length > 0) return results[1];
-      return this.onEventSourceError({
-        data: "Unset parameter " + name
-      });
-    };
 
     Broker.prototype.post = function(data) {
       return $.postMessage(data, this.parent_url, parent);

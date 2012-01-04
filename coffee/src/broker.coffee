@@ -1,20 +1,19 @@
+# Extract parameters from the url.
+# @param [String] name of the parameter
+# @return [String] value for the parameter if present
+window['getParam'] = (name) ->
+  results = new RegExp('[\\?&]' + name + '=([^&#]*)').exec(window.location.href)
+  if results && results.length > 0
+    return results[1]
+
+
 # Broker service
 class window.Broker
   # Broker constructor
   # Get channel and parent url from the parameters
   constructor: ->
-    @channel = @getParam('channel')
-    @parent_url = @getParam('parent_url')
-
-  # Extract parameters from the url. Trigger error if not found
-  # @param [String] name of the parameter
-  # @return [String] value for the parameter if present
-  getParam: (name) ->
-    results = new RegExp('[\\?&]' + name + '=([^&#]*)').exec(window.location.href)
-    if results && results.length > 0
-      return results[1]
-    @onEventSourceError({data: "Unset parameter #{name}"})
-
+    @channel = window.getParam('channel')
+    @parent_url = window.getParam('parent_url')
 
   # Post message to the parent window
   post: (data) ->
