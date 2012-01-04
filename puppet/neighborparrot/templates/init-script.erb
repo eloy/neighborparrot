@@ -24,7 +24,10 @@ LOGFILE=/var/log/${NAME}.log
 APP_HOME=<%= app_path %>
 DAEMON_HOME=/${APP_HOME}/lib/
 
-DAEMON_ARGS="-e prod -p 80 -P ${PIDFILE} -l ${LOGFILE} -d"
+SSL_CERT=/etc/neighborparrot/cert/neighborparrot.net.crt
+SSL_KEY=/etc/neighborparrot/cert/neighborparrot.net.key
+
+DAEMON_ARGS="-e prod -P ${PIDFILE} -l ${LOGFILE} -d --ssl --ssl-key ${SSL_KEY} --ssl-cert ${SSL_CERT} -a 127.0.0.1 -p 9000"
 
 
 RUBY=$(which ruby)

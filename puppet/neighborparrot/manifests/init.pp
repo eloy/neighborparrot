@@ -38,13 +38,13 @@ class neighborparrot {
     require => File['haproxy-config'],
   }
 
-  service { 'haproxy':
-    ensure => running,
-    enable => true,
-    hasstatus => false,
-    hasrestart => true,
-    require => File['haproxy-defaults']
-  }
+  # service { 'haproxy':
+  #   ensure => running,
+  #   enable => true,
+  #   hasstatus => false,
+  #   hasrestart => true,
+  #   require => File['haproxy-defaults']
+  # }
   
   # Override defaults
   file { 'haproxy-defaults':
