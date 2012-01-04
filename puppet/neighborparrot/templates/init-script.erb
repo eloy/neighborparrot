@@ -43,9 +43,9 @@ start() {
 
     if [ $RETVAL -eq 0 ]; then
         touch $DAEMON_LOCKFILE
-        echo "OK"
+        echo "ok"
     else
-        echo "FAIL"
+        echo "fail"
     fi
 
     echo
@@ -53,13 +53,18 @@ start() {
 
 stop() {
     echo -n $"Shutting down ${NAME}: "
+
+    if [ ! -e "$PIDFILE" ]; then
+        echo "Not running"
+        return
+    fi
     
     kill -s TERM `cat $PIDFILE`
     RETVAL=$?
 
     [ $RETVAL -eq 0 ] && /bin/rm -f $DAEMON_LOCKFILE $PIDFILE
 
-    echo
+    echo "ok"
 }
 
 status () {
