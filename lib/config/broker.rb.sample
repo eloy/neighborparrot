@@ -1,9 +1,0 @@
-require 'amqp'
-
-amqp_config = {
-  :host => '127.0.0.1',
-  :user => 'guest',
-  :pass => 'guest'
-}
-
-config['connection'] = AMQP.connect(amqp_config)

@@ -1,7 +1,0 @@
-#!/usr/bin/env ruby
-
-
-require "./channel_broker.rb"
-require "./test_channel_broker.rb"
-require "./channel_broker_factory.rb"
-require "./broker.rb"

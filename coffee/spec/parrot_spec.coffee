@@ -1,3 +1,5 @@
+Parrot.brokerHost = "http://localhost:9000"
+
 describe "Parrot", ->
   it "Should create a iframe on create", ->
     parrot = new Parrot("dummy", app.dummy)

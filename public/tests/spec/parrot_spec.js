@@ -1,4 +1,6 @@
 
+  Parrot.brokerHost = "http://localhost:9000";
+
   describe("Parrot", function() {
     it("Should create a iframe on create", function() {
       var parrot;

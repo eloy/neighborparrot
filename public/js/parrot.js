@@ -1,9 +1,7 @@
 
   window.Parrot = (function() {
 
-    Parrot.brokerHost = "http://neighborparrot.net";
-
-    Parrot.brokerSrc = "" + Parrot.brokerHost + "/index.html";
+    Parrot.brokerHost = "https://neighborparrot.net";
 
     Parrot.debug = false;
 
@@ -27,12 +25,10 @@
       bounder = function(e) {
         return _this.dispatch.call(_this, e);
       };
-      if (window['postMessage']) {
-        if (window['addEventListener']) {
-          return window.addEventListener('message', bounder);
-        } else {
-          return window.attachEvent('onmessage', bounder);
-        }
+      if (window['addEventListener']) {
+        return window.addEventListener('message', bounder);
+      } else {
+        return window.attachEvent('onmessage', bounder);
       }
     };
 
@@ -73,7 +69,7 @@
       this.log("Creating IFrame it not present");
       if ($("iframe#parrot-iframe").length === 0) {
         url_params = "?channel=" + this.channel + "&parent_url=" + (this.getUrl());
-        src = "" + Parrot.brokerSrc + url_params;
+        src = "" + Parrot.brokerHost + url_params;
         iframe = $('<iframe>', {
           id: 'parrot-iframe',
           src: src

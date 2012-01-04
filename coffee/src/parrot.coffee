@@ -1,7 +1,6 @@
 # NeighborParrot client
 class window.Parrot
-  @brokerHost = "http://neighborparrot.net"
-  @brokerSrc = "#{@brokerHost}/index.html"
+  @brokerHost = "https://neighborparrot.net"
   @debug = false
 
 
@@ -62,7 +61,7 @@ class window.Parrot
     @log "Creating IFrame it not present"
     if $("iframe#parrot-iframe").length == 0
       url_params = "?channel=#{@channel}&parent_url=#{@getUrl()}"
-      src = "#{Parrot.brokerSrc}#{url_params}"
+      src = "#{Parrot.brokerHost}#{url_params}"
       iframe = $('<iframe>', { id: 'parrot-iframe', src: src})
       iframe.hide().appendTo('body')
       @log "Created IFrame"
