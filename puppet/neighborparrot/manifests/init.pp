@@ -12,11 +12,6 @@ class neighborparrot {
 
   Exec { path => ['/bin', '/usr/bin', '/usr/sbin'] }
 
-  # Rabbit MQ config
-  $rabbit_vhost = 'neighborparrot'
-  $rabbit_user = 'theparrot'
-  $rabbit_password = 'changeit'
-
   # Create user and group for the app
   group { $app_group:
     ensure => present,
@@ -37,40 +32,34 @@ class neighborparrot {
     content  => template("neighborparrot/init-script.erb"),
   }
 
+  # HA Proxy
+  package {'haproxy':
+    ensure => installed,
+    require => File['haproxy-config'],
+  }
 
-  # Setup application
-  # file { 'broker.rb':
-  #   path    => "${app_path}/lib/config/broker.rb",
-  #   ensure  => file,
-  #   require => Package['rabbitmq-server'],
-  #   content  => template("neighborparrot/broker.config.erb"),
-  # }
-
-  # Rabbit MQ
-  # package { 'rabbitmq-server':
-  #   ensure => installed,
-  # }
-  # service { 'rabbitmq-server':
-  #   ensure => running,
-  #   enable => true,
-  #   hasstatus => true,
-  #   hasrestart => true,
-  # }
-
-  # Create rabbit vhost
-  # exec { "rabbitmqctl add_vhost /${rabbit_vhost}":
-  #   unless => "rabbitmqctl list_vhosts  | grep ${rabbit_vhost} -q"
-  # }
-
-  # Create user
-  # exec { "rabbitmqctl add_user ${rabbit_user} ${rabbit_password}":
-  #   unless => "rabbitmqctl list_users  | grep ${rabbit_user} -q"
-  # }
-
-  # Create user
-  # exec { "rabbitmqctl set_permissions -p /${rabbit_vhost} ${rabbit_user} \".*\" \".*\" \".*\"":
-  #   unless => "rabbitmqctl list_permissions -p /${rabbit_vhost} | grep ${rabbit_user} -q"
-  # }
-
+  service { 'haproxy':
+    ensure => running,
+    enable => true,
+    hasstatus => false,
+    hasrestart => true,
+    require => File['haproxy-defaults']
+  }
+  
+  # Override defaults
+  file { 'haproxy-defaults':
+    path    => "/etc/default/haproxy",
+    ensure  => file,
+    mode => 0755,
+    source   => "puppet:///modules/neighborparrot/haproxy.defaults",
+  }
+  
+  # Config
+  file { 'haproxy-config':
+    path    => "/etc/haproxy/haproxy.cfg",
+    ensure  => file,
+    mode => 0644,
+    content  => template("neighborparrot/haproxy.cfg.erb"),
+  }
   
 }
