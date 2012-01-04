@@ -1,2 +1,5 @@
 #!/usr/bin/env ruby
+
+require 'goliath'
+
 Dir["#{File.dirname(__FILE__)}/lib/**/*.rb"].each {|f| require f}

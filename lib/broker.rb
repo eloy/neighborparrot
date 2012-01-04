@@ -1,9 +1,6 @@
-require 'goliath'
-require 'goliath/plugins/latency'
-require 'json'
-require 'pp'
+# require 'goliath/plugins/latency'
 
- module Rack
+module Rack
    class Static
      def can_serve(path)
        return false if path == "/"
