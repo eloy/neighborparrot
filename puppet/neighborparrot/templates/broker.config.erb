@@ -1,10 +1,8 @@
-require 'amqp'
-
-amqp_config = {
+config['rabbit_conf'] = {
   :host => '127.0.0.1',
   :vhost => '<%= rabbit_vhost %>',
   :user => '<%= rabbit_user %>',
   :pass => '<%= rabbit_password %>'
 }
 
-config['connection'] = AMQP.connect(amqp_config)
+config['use_rabbit'] = false

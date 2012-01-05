@@ -1,5 +1,3 @@
-require "rubygems"
-
 # Gets messages from rabbitmq and sends to
 # channel members via Event Machine channel
 class ChannelBroker

@@ -1,8 +1,8 @@
-amqp_config = {
+config['rabbit_conf'] = {
   :host => '127.0.0.1',
-  :vhost => '/vhost',
-  :user => 'user',
-  :pass => 'password'
+  :vhost => '/neighborparrot',
+  :user => 'theparrot',
+  :pass => 'changeit'
 }
 
-config['connection'] = AMQP.connect(amqp_config)
+config['use_rabbit'] = true

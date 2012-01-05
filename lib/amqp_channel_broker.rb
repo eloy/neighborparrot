@@ -4,10 +4,17 @@
 class AMQPChannelBroker
   attr_reader :consumer_channel
 
+  @@_connection = nil
+  def self.get_connection(conf)
+    unless @@_connection
+      @_connection = AMQP.connect(conf)
+    end
+  end
+
   # Initialize EM channel for internal distribution
   def initialize(env, room = AMQ::Protocol::EMPTY_STRING)
     @room = room
-    @connection = env.connection
+    @connection = AMQPChannelBroker.get_connection(env.rabbit_conf)
     @consumer_channel = EM::Channel.new
   end
 
