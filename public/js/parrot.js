@@ -69,7 +69,7 @@
       this.log("Creating IFrame it not present");
       if ($("iframe#parrot-iframe").length === 0) {
         url_params = "?channel=" + this.channel + "&parent_url=" + (this.getUrl());
-        src = "" + Parrot.brokerHost + url_params;
+        src = "" + Parrot.brokerHost + "/" + url_params;
         iframe = $('<iframe>', {
           id: 'parrot-iframe',
           src: src
