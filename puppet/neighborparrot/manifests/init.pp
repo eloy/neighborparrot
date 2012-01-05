@@ -22,6 +22,9 @@ class neighborparrot {
   $rabbit_user = 'theparrot'
   $rabbit_password = 'changeit'
 
+  # Hosts
+  $host_com_ip = "84.232.42.217"
+  $host_net_ip = "84.232.40.201"
   
   Exec { path => ['/bin', '/usr/bin', '/usr/sbin'] }
 
