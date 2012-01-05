@@ -12,11 +12,12 @@ class ChannelBrokerFactory
     end
 
     # For RabbitMQ brokers
-    # worker = AMQPChannelBroker.new(env, channel)
-    # worker.start
+    broker = AMQPChannelBroker.new(env, channel)
+    broker.start
 
-    broker = ChannelBroker.new(env, channel)
-    @@channel_brokers[channel] = broker
+    #broker = ChannelBroker.new(env, channel)
+    #@@channel_brokers[channel] = broker
+
     return broker
   end
 end

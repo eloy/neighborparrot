@@ -1,5 +1,8 @@
 #!/usr/bin/env ruby
 
+require "rubygems"
 require 'goliath'
+require 'amqp'
+
 
 Dir["#{File.dirname(__FILE__)}/lib/**/*.rb"].each {|f| require f}

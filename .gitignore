@@ -1,5 +1,5 @@
 # config
-lib/config/broker.rb
+config/broker.rb
 
 # rcov generated
 coverage

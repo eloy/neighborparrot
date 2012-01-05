@@ -22,7 +22,6 @@ NAME=${DAEMON}
 PIDFILE=/var/run/${NAME}.pid
 LOGFILE=/var/log/${NAME}.log
 APP_HOME=<%= app_path %>
-DAEMON_HOME=/${APP_HOME}/lib/
 
 SSL_CERT=/etc/neighborparrot/cert/neighborparrot.net.crt
 SSL_KEY=/etc/neighborparrot/cert/neighborparrot.net.key
@@ -37,7 +36,7 @@ DAEMON_LOCKFILE=/var/lock/$NAME
 start() {
     echo -n $"Starting ${NAME}: "
         
-    cd $DAEMON_HOME
+    cd $APP_HOME
     $RUBY $DAEMON $DAEMON_ARGS
 
     sleep 2

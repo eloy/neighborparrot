@@ -1,0 +1,8 @@
+amqp_config = {
+  :host => '127.0.0.1',
+  :vhost => '/vhost',
+  :user => 'user',
+  :pass => 'password'
+}
+
+config['connection'] = AMQP.connect(amqp_config)

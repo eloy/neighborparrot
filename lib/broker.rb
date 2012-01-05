@@ -15,6 +15,7 @@ module Rack
 # rabbitmq proxy for Event Service
 class Broker < Goliath::API
   use Goliath::Rack::Params
+
   # Don't serve static pages on production
   unless Goliath.prod?
     use Rack::Static, :urls => ["/js", "/tests"], :root => Goliath::Application.app_path("../public")
@@ -56,8 +57,6 @@ class Broker < Goliath::API
   # Get the ChannelBroker with the ChannelBrokerFactory
   # @return [Stream] stream for this channel
   def subscribe_to_channel(env)
-    logger.info "Processing request get"
-
     channel = env.params['channel']
     key = env.params['key']
     env['SUBSCRIBER'] = { :key => key, :channel => channel }
@@ -71,7 +70,6 @@ class Broker < Goliath::API
 
       broker = ChannelBrokerFactory.get(env, channel)
       sid = broker.consumer_channel.subscribe do |msg|
-        logger.info "Sending: #{msg}"
         env.stream_send "data:#{msg}\n\n"
       end
 

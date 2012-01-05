@@ -32,10 +32,11 @@ Common options:
 </code></pre>
 
 == Deploy in ubuntus
-<pre><code>
+<code>
 sudo aptitude install ruby1.9.1 ruby1.9.1-dev git-core build-essential
 ln -s /usr/bin/ruby1.9.1 /usr/bin/ruby
 ln -s /usr/bin/gem1.9.1 /usr/bin/gem
+cd /tmp && wget http://www.rabbitmq.com/releases/rabbitmq-server/v2.7.1/rabbitmq-server_2.7.1-1_all.deb && dpkg -i rabbitmq-server_2.7.1-1_all.deb
 sudo gem install puppet
 sudo addgroup puppet
 #sudo gem install puppet-module
@@ -46,7 +47,7 @@ git clone git@github.com:harlock/neighborparrot.git /tmp/neighborparrot
 sudo mv /tmp/neighborparrot /var/local/neighborparrot
 ln -s /var/local/neighborparrot/puppet/neighborparrot /etc/puppet/modules/neighborparrot
 sudo puppet apply -e "include neighborparrot"
-</code></pre>
+</code>
 
 == For Rabbit MQ
 sudo aptitude install erlang-nox

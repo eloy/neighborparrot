@@ -3,7 +3,7 @@ require File.expand_path(File.dirname(__FILE__) + '/acceptance_helper')
 describe "Neighborparrot" do
   before :each do
     @key = 'test_key'
-    @parrot = Neighborparrot.new(@key)
+    @parrot = Neighborparrot.new(@key, "http://127.0.0.1:9000")
   end
   after :each do
     @parrot.close

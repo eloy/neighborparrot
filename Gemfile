@@ -7,6 +7,7 @@ source "http://rubygems.org"
 # Include everything needed to run rake, tests, features, etc.
 
 gem 'capistrano'
+gem 'rake'
 
 group :development do
   gem "rspec", "~> 2.3.0"
@@ -20,4 +21,4 @@ group :test do
 end
 
 gem 'goliath'
-
+gem 'amqp'
