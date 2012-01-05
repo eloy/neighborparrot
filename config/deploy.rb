@@ -57,7 +57,7 @@ namespace :deploy do
 
   task :prepare_app do
     # copy the configuration to the correct place
-    # run "cp /etc/capistrano/neighborparrot-site/database.yml #{release_path}/config/database.yml"
+    run "cp /etc/capistrano/neighborparrot/broker.rb #{release_path}/config/broker.rb"
     run "cd #{release_path} && bundle install --without=test development --deployment"
   end
 
