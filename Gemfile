@@ -18,6 +18,7 @@ end
 
 group :test do
   gem 'neighborparrot'
+  gem 'em-http-request'
 end
 
 gem 'goliath'

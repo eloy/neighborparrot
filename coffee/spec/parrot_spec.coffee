@@ -19,14 +19,22 @@ describe "Parrot", ->
 
   it "Should receive test pattern when connect to test channel", ->
     @testBuffer = []
+    @expectedBufferSize = 8
     that = @
     onmessage = (data) -> that.testBuffer.push data
-    iscompleted = -> return that.testBuffer.length == 26
+    iscompleted = -> return that.testBuffer.length == that.expectedBufferSize
     parrot = new Parrot("test-channel", onmessage)
 
     waitsFor(iscompleted, "test pattern complete", 10000)
     runs ->
-      expect(that.testBuffer.length).toEqual(26)
+      expect(that.testBuffer.length).toEqual(that.expectedBufferSize)
+      for i in [1..that.expectedSize]
+        expectedSize = i  * 256
+        expectedMessage = ''
+        for n in [1..expectedSize]
+          expectedMessage += '#'
+        console.log "test length: #{expectedSize} => #{expectedMessage}"
+        expect(that.testBuffer[i]).toEqual(expectedMessage)
       parrot.close()
 
 

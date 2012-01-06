@@ -1,5 +1,3 @@
-require "rubygems"
-
 # Channel for testing
 # Reproduce a test pattern
 class TestChannelBroker
@@ -14,12 +12,11 @@ class TestChannelBroker
   # Connect to the given channel
   # and setup connection handler
   def start
-    EM.add_timer(1) do
-      pattern = %w(Alpha Bravo Charlie Delta Echo Foxtrot Golf Hotel India Juliet Kilo Lima Mike November Oscar Papa Quebec Romeo Sierra Tango Uniform Victor Whiskey Xray Yankee Zulu)
-      pattern.each do |w|
-        @consumer_channel.push w
-      end
-
+    EM::Iterator.new(1..8).each do |n,iter|
+      size = n * 256
+      message =  Array.new(size, "#").join
+      @consumer_channel.push message
+      iter.next
     end
   end
 end
