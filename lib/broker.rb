@@ -1,4 +1,4 @@
-require 'goliath/plugins/latency'
+# require 'goliath/plugins/latency'
 module Rack
    class Static
      def can_serve(path)
@@ -22,7 +22,7 @@ class Broker < Goliath::API
   # use Goliath::Rack::Tracer
   # use Goliath::Rack::Heartbeat
   # use Goliath::Rack::Validation::RequiredParam, {:key => 'channel'}
-  plugin Goliath::Plugin::Latency       # output reactor latency every second
+  # plugin Goliath::Plugin::Latency       # output reactor latency every second
 
   # on close action
   def on_close(env)
@@ -41,6 +41,7 @@ class Broker < Goliath::API
     channel = env.params['channel']
     data = env.params['data']
     broker = ChannelBrokerFactory.get(env, channel)
+    env.logger.info "Recibido: #{data}"
     broker.publish(data)
     [200, {}, 'Ok']
   end

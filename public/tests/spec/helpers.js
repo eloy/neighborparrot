@@ -3,8 +3,6 @@
 
   serverParam = getParam('server');
 
-  serverParam = 'http://127.0.0.1:9000';
-
   if (serverParam) Parrot.brokerHost = serverParam;
 
   dummy = function() {};
