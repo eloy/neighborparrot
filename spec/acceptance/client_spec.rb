@@ -33,4 +33,21 @@ describe "Neighborparrot" do
     received.length.should eq 1
     received.first.should eq 'message'
   end
+
+  [32, 64, 128, 256, 512, 1024, 2048, 4096].each do |size|
+    it "Should manage messages with size = #{size}" do
+      message =  Array.new(size, ".").join
+      received = nil
+      @parrot.on_message do |msg|
+        received = msg
+      end
+      @parrot.open('test')
+      sleep(2)
+      @parrot.post('test', message)
+      sleep(1)
+      received.should eq message
+    end
+  end
+
+
 end
