@@ -16,7 +16,7 @@ module Neighborparrot
     def initialize(env)
       @env = env
       @channel = env.params['channel']
-      # @env.logger.debug "Connected to channel #{@channel}"
+      @env.logger.debug "Connected to channel #{@channel}"
       init_queue
       init_stream
       subscribe
@@ -25,7 +25,7 @@ module Neighborparrot
     def init_queue
       @queue = EM::Queue.new
       processor = proc { |msg|
-        # @env.logger.debug "Send message to customer X in channel #{@channel}"
+        @env.logger.debug "Send message to connection X in channel #{@channel}"
         @env.stream_send msg
         @queue.pop(&processor)
       }
