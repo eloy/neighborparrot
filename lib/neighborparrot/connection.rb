@@ -16,7 +16,6 @@ module Neighborparrot
     def initialize(env)
       @env = env
       @channel = env.params['channel']
-      raise "No channel" if @channel.nil? || @channel.length == 0
       # @env.logger.debug "Connected to channel #{@channel}"
       init_queue
       init_stream
