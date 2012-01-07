@@ -39,13 +39,16 @@ class window.Parrot
     @removeIFrame()
     @log "Parrot closed"
 
+  parseMessage: (msg) ->
+    { data: msg.substring(5) }
+
   # Receive the event and call the desired callback
   dispatch: (event) ->
     return if event.origin != Parrot.brokerHost
     msg = event.data
     @log "Dispatching message: @{msg}"
     if msg.match("^data:")
-      @onmessage(msg.substring(5))
+      @onmessage @parseMessage msg
       @log "Calling onmessage callout"
     else if msg.match("^open:") && @onconnect
       @onconnect()

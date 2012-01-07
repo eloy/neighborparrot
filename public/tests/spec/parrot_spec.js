@@ -29,8 +29,8 @@
       this.testBuffer = [];
       this.expectedBufferSize = 8;
       that = this;
-      onmessage = function(data) {
-        return that.testBuffer.push(data);
+      onmessage = function(e) {
+        return that.testBuffer.push(e.data);
       };
       iscompleted = function() {
         return that.testBuffer.length === that.expectedBufferSize;

@@ -1,4 +1,4 @@
-# require 'goliath/plugins/latency'
+require 'goliath/plugins/latency'
 module Rack
    class Static
      def can_serve(path)
@@ -22,7 +22,8 @@ class Broker < Goliath::API
   # use Goliath::Rack::Tracer
   # use Goliath::Rack::Heartbeat
   # use Goliath::Rack::Validation::RequiredParam, {:key => 'channel'}
-  # plugin Goliath::Plugin::Latency       # output reactor latency every second
+
+  #  plugin Goliath::Plugin::Latency       # output reactor latency every second
 
   # on close action
   def on_close(env)
@@ -36,12 +37,12 @@ class Broker < Goliath::API
   # Process POST request
   # Send message to the ChannelBroker
   # Generate a channel uuid
-  def send_msg_to_channel(env)
+  def send(env)
     # use Goliath::Rack::Validation::RequestMethod, %w(POST)
     channel = env.params['channel']
     data = env.params['data']
+    env.logger.debug "Sent #{data} to channel #{channel}"
     broker = ChannelBrokerFactory.get(env, channel)
-    env.logger.info "Recibido: #{data}"
     broker.publish(data)
     [200, {}, 'Ok']
   end
@@ -68,7 +69,7 @@ class Broker < Goliath::API
     case env['PATH_INFO']
     when '/' then render_index(env)
     when '/open'     then open(env)
-    when '/post'     then send_msg_to_channel(env)
+    when '/send'     then send(env)
     else             raise Goliath::Validation::NotFoundError
     end
   end

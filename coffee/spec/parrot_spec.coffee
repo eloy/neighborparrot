@@ -21,7 +21,7 @@ describe "Parrot", ->
     @testBuffer = []
     @expectedBufferSize = 8
     that = @
-    onmessage = (data) -> that.testBuffer.push data
+    onmessage = (e) -> that.testBuffer.push e.data
     iscompleted = -> return that.testBuffer.length == that.expectedBufferSize
     parrot = new Parrot("test-channel", onmessage)
 

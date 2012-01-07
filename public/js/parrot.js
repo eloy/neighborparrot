@@ -45,13 +45,19 @@
       return this.log("Parrot closed");
     };
 
+    Parrot.prototype.parseMessage = function(msg) {
+      return {
+        data: msg.substring(5)
+      };
+    };
+
     Parrot.prototype.dispatch = function(event) {
       var msg;
       if (event.origin !== Parrot.brokerHost) return;
       msg = event.data;
       this.log("Dispatching message: @{msg}");
       if (msg.match("^data:")) {
-        this.onmessage(msg.substring(5));
+        this.onmessage(this.parseMessage(msg));
         return this.log("Calling onmessage callout");
       } else if (msg.match("^open:") && this.onconnect) {
         this.onconnect();
