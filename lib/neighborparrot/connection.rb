@@ -16,6 +16,8 @@ module Neighborparrot
     def initialize(env)
       @env = env
       @channel = env.params['channel']
+      raise "No channel" if @channel.nil? || @channel.length == 0
+      # @env.logger.debug "Connected to channel #{@channel}"
       init_queue
       init_stream
       subscribe
@@ -24,6 +26,7 @@ module Neighborparrot
     def init_queue
       @queue = EM::Queue.new
       processor = proc { |msg|
+        # @env.logger.debug "Send message to customer X in channel #{@channel}"
         @env.stream_send msg
         @queue.pop(&processor)
       }
@@ -48,7 +51,8 @@ module Neighborparrot
     end
 
     def close
-      @broker.consumer_channel.unsubscribe(@sid)
+      # @env.logger.debug "unsubscribe custome from channel #{@channel}"
+      @broker.consumer_channel.unsubscribe(@subscription_id)
     end
   end
 end
