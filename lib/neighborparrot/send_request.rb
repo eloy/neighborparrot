@@ -1,29 +1,15 @@
 require 'json'
 module Neighborparrot
 
-  class SendRequest
-    @@next_message_id = 1
+  # Handle send request
+  def prepare_request(env)
+    channel = env.params['channel']
+    data = env.params['data']
+    env.logger.debug "Sent #{data} to channel #{channel}"
 
-    def initialize(env)
-      @env = env
-      @channel = @env.params['channel']
-      prepare_request
-    end
+    broker = get_channel(env, channel)
 
-    def prepare_request
-      data = @env.params['data']
-      @env.logger.debug "Sent #{data} to channel #{@channel}"
-      broker = ChannelBrokerFactory.get(@env, @channel)
-      broker.publish format_event(data)
-      @@next_message_id += 1
-    end
-
-    # Prepare a message as data message
-    def format_event(data)
-      return "id:#{@@next_message_id}\ndata:#{data}\n\n"
-    end
-
-    def close
-    end
+    broker.publish pack_message_event(data)
   end
+
 end

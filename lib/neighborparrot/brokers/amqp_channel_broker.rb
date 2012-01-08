@@ -1,3 +1,9 @@
+require 'amqp'
+
+module Neighborparrot
+  USE_RABBITMQ = true
+end
+
 # Channel Broker with AMQP support
 # Gets messages from rabbitmq and sends to
 # channel members via Event Machine channel

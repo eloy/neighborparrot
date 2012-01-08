@@ -1,21 +1,8 @@
 module Neighborparrot
 
-  EventSourceHeaders = {
-    'Access-Control-Allow-Origin' => '*',
-    'Content-Type' => 'text/event-stream',
-    'Cache-Control' => 'no-cache',
-    'Connection' => 'keep-alive',
-    'Transfer-Encoding' => 'chunked',
-    'X-Stream' => 'Neighborparrot',
-    'Server' => 'Neighborparrot',
-    'Last-Event-Id' => '1' # TODO
-  }
-
-  # Seconds betwen keep alive pings
-  KEEP_ALIVE_TIMER = 25
-
   # Subscriber connection representation
   class Connection
+    include Neighborparrot
 
     # Create a connection
     # Create a queue for the connection
@@ -33,15 +20,15 @@ module Neighborparrot
     def init_queue
       @queue = EM::Queue.new
       processor = proc { |msg|
-        @env.chunked_stream_send msg
+        send_to_client msg
         @queue.pop(&processor)
       }
       @queue.pop(&processor)
     end
 
     def send_to_client(msg)
-#      @env.logger.debug "Send message msg to connection X in channel #{@channel}"
-
+      # @env.logger.debug "Send message msg to connection X in channel #{@channel}"
+      @env.chunked_stream_send msg
     end
 
     def keep_alive_timer
@@ -52,7 +39,7 @@ module Neighborparrot
 
     def subscribe
       @env.logger.debug "Subscribing the connection to the channel"
-      @broker = ChannelBrokerFactory.get(@env, @channel)
+      @broker = get_channel(@env, @channel)
       @subscription_id = @broker.consumer_channel.subscribe do |msg|
         @queue.push msg
       end

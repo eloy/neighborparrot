@@ -11,12 +11,14 @@ module Rack
 
 
 # Broker Class
-class Broker < Goliath::API
+class ConnectionHandler < Goliath::API
+  include Neighborparrot
+
   use Goliath::Rack::Params
 
   # Don't serve static pages on production
   unless Goliath.prod?
-    use Rack::Static, :urls => ["/js", "/tests"], :root => Goliath::Application.app_path("../public")
+    use Rack::Static, :urls => ["/js", "/tests"], :root => Goliath::Application.app_path("/../../public")
   end
 
   # use Goliath::Rack::Tracer
@@ -41,7 +43,7 @@ class Broker < Goliath::API
   # Generate a channel uuid
   def send(env)
     EM.next_tick do
-      env['np_connection'] = Neighborparrot::SendRequest.new(env)
+      prepare_request env
     end
     [200, {}, 'Ok']
   end
