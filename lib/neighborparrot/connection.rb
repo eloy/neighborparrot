@@ -4,8 +4,15 @@ module Neighborparrot
     'Access-Control-Allow-Origin' => '*',
     'Content-Type' => 'text/event-stream',
     'Cache-Control' => 'no-cache',
-    'Connection' => 'keep-alive'
+    'Connection' => 'keep-alive',
+    'Transfer-Encoding' => 'chunked',
+    'X-Stream' => 'Neighborparrot',
+    'Server' => 'Neighborparrot',
+    'Last-Event-Id' => '1' # TODO
   }
+
+  # Seconds betwen keep alive pings
+  KEEP_ALIVE_TIMER = 25
 
   # Subscriber connection representation
   class Connection
@@ -18,39 +25,45 @@ module Neighborparrot
       @channel = env.params['channel']
       @env.logger.debug "Connected to channel #{@channel}"
       init_queue
-      init_stream
+      @queue.push ": " << Array.new(2048, " ").join << "\n\n" # Init stream
+#      keep_alive_timer
       subscribe
     end
 
     def init_queue
       @queue = EM::Queue.new
       processor = proc { |msg|
-        @env.logger.debug "Send message to connection X in channel #{@channel}"
-        @env.stream_send msg
+        @env.chunked_stream_send msg
         @queue.pop(&processor)
       }
       @queue.pop(&processor)
     end
 
-    # Initialize the stream
-    def init_stream
-      @queue.push ": " << Array.new(2048, " ").join << "\n\n"
+    def send_to_client(msg)
+#      @env.logger.debug "Send message msg to connection X in channel #{@channel}"
+
     end
 
-    # Prepare a message as data message
-    def data_msg(msg)
-      "data:#{msg}\n\n"
-    end
-
-    def subscribe
-      @broker = ChannelBrokerFactory.get(@env, @channel)
-      @subscription_id = @broker.consumer_channel.subscribe do |msg|
-        @queue.push data_msg(msg)
+    def keep_alive_timer
+      @timer = EventMachine::PeriodicTimer.new(KEEP_ALIVE_TIMER) do
+        @queue.push ':\n\n' # Empty event stream
       end
     end
 
-    def close
-      # @env.logger.debug "unsubscribe custome from channel #{@channel}"
+    def subscribe
+      @env.logger.debug "Subscribing the connection to the channel"
+      @broker = ChannelBrokerFactory.get(@env, @channel)
+      @subscription_id = @broker.consumer_channel.subscribe do |msg|
+        @queue.push msg
+      end
+    end
+
+    def close_stream
+      @env.chunked_stream_close
+    end
+
+    def on_close
+      @env.logger.debug "unsubscribe custome from channel #{@channel}"
       @broker.consumer_channel.unsubscribe(@subscription_id)
     end
   end

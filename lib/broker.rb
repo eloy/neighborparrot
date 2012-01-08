@@ -21,6 +21,7 @@ class Broker < Goliath::API
 
   # use Goliath::Rack::Tracer
   # use Goliath::Rack::Heartbeat
+  # use Goliath::Rack::Validation::RequestMethod, %w(POST)
   # use Goliath::Rack::Validation::RequiredParam, {:key => 'channel'}
 
   #  plugin Goliath::Plugin::Latency       # output reactor latency every second
@@ -28,22 +29,20 @@ class Broker < Goliath::API
   # on close action
   def on_close(env)
     begin
-      env['np_connection'].close if env['np_connection']
+      env['np_connection'].on_close if env['np_connection']
     rescue
       env.logger.error $!
     end
   end
 
+  @next_message_id = 1
   # Process POST request
   # Send message to the ChannelBroker
   # Generate a channel uuid
   def send(env)
-    # use Goliath::Rack::Validation::RequestMethod, %w(POST)
-    channel = env.params['channel']
-    data = env.params['data']
-    env.logger.debug "Sent #{data} to channel #{channel}"
-    broker = ChannelBrokerFactory.get(env, channel)
-    broker.publish(data)
+    EM.next_tick do
+      env['np_connection'] = Neighborparrot::SendRequest.new(env)
+    end
     [200, {}, 'Ok']
   end
 
@@ -52,7 +51,7 @@ class Broker < Goliath::API
     EM.next_tick do
       env['np_connection'] = Neighborparrot::Connection.new(env)
     end
-    [200, Neighborparrot::EventSourceHeaders, Goliath::Response::STREAMING]
+    chunked_streaming_response(200, Neighborparrot::EventSourceHeaders)
   end
 
   def render_index(env)
