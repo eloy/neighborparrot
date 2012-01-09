@@ -17,7 +17,7 @@ class TestChannelBroker
     EM::Iterator.new(1..8).each do |n,iter|
       size = n * 256
       message =  Array.new(size, "#").join
-      @consumer_channel.push pack_message_event message
+      @consumer_channel.push pack_message_event({ :id => generate_message_id, :data => message })
       iter.next
     end
   end

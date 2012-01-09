@@ -17,9 +17,11 @@ end
 
 
 group :test do
-  gem 'neighborparrot'
   gem 'em-http-request'
+  gem 'em-eventsource'
 end
 
 gem 'goliath'
+gem 'rack'
+gem 'rack-multipart_related'
 gem 'amqp'

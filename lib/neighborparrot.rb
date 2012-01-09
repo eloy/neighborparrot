@@ -1,3 +1,8 @@
+#!/usr/bin/env ruby
+
+require 'rack'
+require 'rack/multipart'
+require 'rack/multipart/parser'
 require "rubygems"
 require 'goliath'
 

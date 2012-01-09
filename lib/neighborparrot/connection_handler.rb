@@ -21,12 +21,21 @@ class ConnectionHandler < Goliath::API
     use Rack::Static, :urls => ["/js", "/tests"], :root => Goliath::Application.app_path("/../../public")
   end
 
-  # use Goliath::Rack::Tracer
+  # Only use the tracer for test purposes
+  use Goliath::Rack::Tracer if Goliath.test?
+
+
   # use Goliath::Rack::Heartbeat
   # use Goliath::Rack::Validation::RequestMethod, %w(POST)
   # use Goliath::Rack::Validation::RequiredParam, {:key => 'channel'}
 
   #  plugin Goliath::Plugin::Latency       # output reactor latency every second
+
+  # Init Netighborparrot
+  def initialize(opts = {})
+    super opts
+    prepare_input_queue
+  end
 
   # on close action
   def on_close(env)
@@ -37,19 +46,16 @@ class ConnectionHandler < Goliath::API
     end
   end
 
-  @next_message_id = 1
   # Process POST request
   # Send message to the ChannelBroker
   # Generate a channel uuid
   def send(env)
-    EM.next_tick do
-      prepare_request env
-    end
-    [200, {}, 'Ok']
+    [200, {}, prepare_send_request(env)]
   end
 
 
   def open(env)
+    env.trace 'open connection'
     EM.next_tick do
       env['np_connection'] = Neighborparrot::Connection.new(env)
     end

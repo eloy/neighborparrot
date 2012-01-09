@@ -8,6 +8,7 @@ module Neighborparrot
     # Create a queue for the connection
     # Locate the desired channel and susbcribe thier queue to the channel
     def initialize(env)
+      env.trace 'init connection'
       @env = env
       @channel = env.params['channel']
       @env.logger.debug "Connected to channel #{@channel}"
@@ -27,6 +28,7 @@ module Neighborparrot
     end
 
     def send_to_client(msg)
+      @env.trace 'sending_chunk'
       # @env.logger.debug "Send message msg to connection X in channel #{@channel}"
       @env.chunked_stream_send msg
     end
@@ -38,6 +40,7 @@ module Neighborparrot
     end
 
     def subscribe
+      @env.trace 'subscribing'
       @env.logger.debug "Subscribing the connection to the channel"
       @broker = get_channel(@env, @channel)
       @subscription_id = @broker.consumer_channel.subscribe do |msg|

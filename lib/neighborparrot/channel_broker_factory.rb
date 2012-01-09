@@ -8,9 +8,8 @@ module Neighborparrot
   def get_channel(env, channel)
     return TestChannelBroker.new() if channel == "test-channel"
 
-    if @@channel_brokers.has_key? channel
-      return @@channel_brokers[channel]
-    end
+    broker = @@channel_brokers[channel]
+    return broker unless broker.nil?
 
     if USE_RABBITMQ
       broker = AMQPChannelBroker.new(env, channel)

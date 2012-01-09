@@ -9,9 +9,8 @@ module Neighborparrot
   end
 
   # Prepare a message as data message
-  def pack_message_event(data)
-    id = generate_message_id
-    return "id:#{id}\ndata:#{data}\n\n"
+  def pack_message_event(request)
+    return "id:#{request[:event_id]}\ndata:#{request[:data]}\n\n"
   end
 
   # Connection params
