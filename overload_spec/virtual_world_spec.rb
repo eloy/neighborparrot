@@ -12,8 +12,8 @@ describe 'Virtual World' do
     @recv_expected = 0
     @listeners = 0
     @channels = 0
-    @send_url = 'http://127.0.0.1:9000/send'
-    @open_url = 'http://127.0.0.1:9000/open'
+    @send_url = 'https://neighborparrot.net:9000/send'
+    @open_url = 'https://neighborparrot.net:9000/open'
     @test_length = 30
     # Message count is caculated based on test_length.
     # The broker need some more time to deliver
@@ -66,11 +66,17 @@ describe 'Virtual World' do
       # Setup a finish timer
       EM::Timer.new(@test_length + @grace_time) do
         rate = (@sent_count + @recv_count) / @test_length
-        puts "Sent #{@sent_count}"
-        puts "Received #{@recv_count} with #{@recv_error} errors."
-        puts "#{@listeners} listeners  of #{@listen_expected} in #{@channels} channels with #{@listen_error}] listen errors.."
-        puts "#{@recv_expected - @recv_count} messages lost."
-        puts "Run time #{@test_length} seconds ~ #{rate} mps."
+        lost = @recv_expected - @recv_count
+        buff = "Sent #{@sent_count}, received #{@recv_count}, "
+        buff << "lost #{@recv_expected - @recv_count} "
+        buff << "by #{@listeners} listeners in #{@channels} channels "
+        buff << "in #{@test_length} seconds ~ #{rate} mps."
+        puts buff
+        error = ""
+        refused = @listen_expected - @listeners
+        error << "Listeners refused: #{refused}. " if refused > 0
+        error << "Listeners errors: #{@listen_error}. " if @listen_error > 0
+        puts error unless error.empty?
         EM.stop
       end
     end
