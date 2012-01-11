@@ -3,6 +3,12 @@
 
   serverParam = getParam('server');
 
+  if (!serverParam) {
+    if (window.location.host.match('localhost') || window.location.host.match('127.0.0.1')) {
+      serverParam = location.origin;
+    }
+  }
+
   if (serverParam) Parrot.brokerHost = serverParam;
 
   dummy = function() {};
