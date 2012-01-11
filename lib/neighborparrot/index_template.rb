@@ -20,7 +20,7 @@ module Neighborparrot
 
   def parse_index_template(env, use_polyfill = false)
     server_url = env.config[:server_url] || SERVER_URL
-    assets_path = env.config[:assets_path || ASSETS_URL]
+    assets_path = env.config[:assets_path] || ASSETS_URL
     return INDEX_TEMPLATE.result(binding)
   end
 
