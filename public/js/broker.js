@@ -15,27 +15,36 @@
     }
 
     Broker.prototype.post = function(data) {
-      return $.postMessage(data, this.parent_url, parent);
+      var target_url;
+      target_url = this.parent_url.replace(/([^:]+:\/\/[^\/]+).*/, '$1');
+      return parent.postMessage(data, target_url);
     };
 
     Broker.prototype.onEventSourceOpen = function(event) {
-      return app.broker.post('open:');
+      return this.post('open:');
     };
 
     Broker.prototype.onEventSourceError = function(event) {
-      return app.broker.post("error:" + event.data);
+      return this.post("error:" + event.data);
     };
 
     Broker.prototype.onEventSourceMessage = function(event) {
-      return app.broker.post("data:" + event.data);
+      return this.post("data:" + event.data);
     };
 
     Broker.prototype.open = function() {
-      var es;
+      var es, _this;
+      _this = this;
       es = new EventSource("/open?channel=" + this.channel);
-      es.addEventListener('open', this.onEventSourceOpen, false);
-      es.addEventListener('message', this.onEventSourceMessage, false);
-      return es.addEventListener('error', this.onEventSourceError, false);
+      es.addEventListener('open', function(e) {
+        return _this.onEventSourceOpen.call(_this, e);
+      }, false);
+      es.addEventListener('message', function(e) {
+        return _this.onEventSourceMessage.call(_this, e);
+      }, false);
+      return es.addEventListener('error', function(e) {
+        return _this.onEventSourceError.call(_this, e);
+      }, false);
     };
 
     return Broker;

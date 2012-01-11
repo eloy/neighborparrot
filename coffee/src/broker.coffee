@@ -17,26 +17,34 @@ class window.Broker
 
   # Post message to the parent window
   post: (data) ->
-    $.postMessage(data, @parent_url, parent)
+    target_url = @parent_url.replace( /([^:]+:\/\/[^\/]+).*/, '$1' )
+    parent.postMessage data, target_url
 
   # On connection open send a control event to the parrot
   onEventSourceOpen: (event) ->
-    app.broker.post('open:')
+    @post('open:')
 
   # On connection error send a control event to the parrot
   onEventSourceError:  (event) ->
-    app.broker.post("error:#{event.data}")
+    @post("error:#{event.data}")
 
   # On message post to the parent window
   onEventSourceMessage: (event) ->
-    app.broker.post("data:#{event.data}")
+    @post("data:#{event.data}")
 
   # open connection and add event listeners
   # Called from index.html in the broker server
   open: ->
+    _this = @
     es = new EventSource("/open?channel=#{@channel}");
-    es.addEventListener('open', @onEventSourceOpen, false);
-    es.addEventListener('message', @onEventSourceMessage, false);
-    es.addEventListener('error', @onEventSourceError, false);
+    es.addEventListener('open', (e) ->
+      _this.onEventSourceOpen.call _this, e
+    , false)
+    es.addEventListener('message', (e) ->
+      _this.onEventSourceMessage.call _this, e
+    , false)
+    es.addEventListener('error', (e) ->
+      _this.onEventSourceError.call _this, e
+    , false)
 
 @app = window.app ? {}

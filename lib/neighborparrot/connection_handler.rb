@@ -68,7 +68,9 @@ class ConnectionHandler < Goliath::API
       'Content-Type' => 'text/html',
       'Cache-Control' => 'no-cache',
     }
-    [200, headers, INDEX_TEMPLATE]
+
+    template = get_index_template env
+    [200, headers, template]
   end
 
   # Route request

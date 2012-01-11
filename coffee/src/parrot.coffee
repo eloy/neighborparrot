@@ -1,6 +1,8 @@
 # NeighborParrot client
+#
 class window.Parrot
-  @brokerHost = "https://neighborparrot.net"
+#  @brokerHost = "https://neighborparrot.net"
+  @brokerHost = "http://10.254.0.250:9000"
   @debug = false
 
 
@@ -17,7 +19,6 @@ class window.Parrot
     @onerror = onerror
     @createIFrame()
     @addMessageListener()
-    @log "Constructor create successful with channel #{channel}"
 
   addMessageListener: ->
     _this = @
@@ -26,7 +27,7 @@ class window.Parrot
       window.addEventListener 'message', bounder
     else
       window.attachEvent 'onmessage', bounder
-    # TODO: if not supported??
+    # TODO: if Postmessage is not supported??
 
   # Convenient function for logging
   log: (msg) ->
@@ -64,6 +65,7 @@ class window.Parrot
     @log "Creating IFrame it not present"
     if $("iframe#parrot-iframe").length == 0
       url_params = "?channel=#{@channel}&parent_url=#{@getUrl()}"
+      url_params += "&use_polyfill=true" unless window['EventSource'] # Add polyfill if needed
       src = "#{Parrot.brokerHost}/#{url_params}"
       iframe = $('<iframe>', { id: 'parrot-iframe', src: src})
       iframe.hide().appendTo('body')

@@ -1,7 +1,7 @@
 
   window.Parrot = (function() {
 
-    Parrot.brokerHost = "https://neighborparrot.net";
+    Parrot.brokerHost = "http://10.254.0.250:9000";
 
     Parrot.debug = false;
 
@@ -16,7 +16,6 @@
       this.onerror = onerror;
       this.createIFrame();
       this.addMessageListener();
-      this.log("Constructor create successful with channel " + channel);
     }
 
     Parrot.prototype.addMessageListener = function() {
@@ -75,6 +74,7 @@
       this.log("Creating IFrame it not present");
       if ($("iframe#parrot-iframe").length === 0) {
         url_params = "?channel=" + this.channel + "&parent_url=" + (this.getUrl());
+        if (!window['EventSource']) url_params += "&use_polyfill=true";
         src = "" + Parrot.brokerHost + "/" + url_params;
         iframe = $('<iframe>', {
           id: 'parrot-iframe',
