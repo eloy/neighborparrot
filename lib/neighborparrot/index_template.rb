@@ -11,10 +11,7 @@ module Neighborparrot
   def get_index_template(env)
     @template_cache = {} unless @template_cache
     use_polyfill = env.params['use_polyfill'] == 'true'
-    pp env.params
     template = use_polyfill ? :index_polyfill : :index
-    env.logger.info "Usamos polyfill" if use_polyfill
-    env.logger.info "NOOOO Usamos polyfill" unless use_polyfill
     unless @template_cache[template]
       @template_cache[template] = parse_index_template env, use_polyfill
     end

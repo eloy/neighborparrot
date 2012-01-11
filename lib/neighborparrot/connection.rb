@@ -14,7 +14,7 @@ module Neighborparrot
       @env.logger.debug "Connected to channel #{@channel}"
       init_queue
       @queue.push ": " << Array.new(2048, " ").join << "\n\n" # Init stream
-#      keep_alive_timer
+      # keep_alive_timer # Not neede??
       subscribe
     end
 

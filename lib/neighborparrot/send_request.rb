@@ -12,7 +12,7 @@ module Neighborparrot
   end
 
   def send_to_broker(request)
-    env.logger.debug "Sent #{env.params} to channel #{request[:channel]}"
+    # env.logger.debug "Sent message to channel #{request[:channel]}"
     env.trace 'looking channel'
     broker = @@channel_brokers[request[:channel]]
     env.trace 'sending to broker'
