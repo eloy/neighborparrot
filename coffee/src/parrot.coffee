@@ -1,10 +1,8 @@
 # NeighborParrot client
 #
 class window.Parrot
-#  @brokerHost = "https://neighborparrot.net"
-  @brokerHost = "http://10.254.0.250:9000"
+  @brokerHost = "https://neighborparrot.net"
   @debug = false
-
 
   # Parrot constructot
   # @param [String] channel name

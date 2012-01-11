@@ -1,7 +1,7 @@
 
   window.Parrot = (function() {
 
-    Parrot.brokerHost = "http://10.254.0.250:9000";
+    Parrot.brokerHost = "https://neighborparrot.net";
 
     Parrot.debug = false;
 
