@@ -37,7 +37,7 @@ INDEX_TEMPLATE = ERB.new <<-EOF
 :-)
 <script>
   broker = new Broker("<%= server_url %>");
-  broker.open();
+  setTimeout(function() { broker.open(); }, 0);
 </script>
 </body>
 </html>
