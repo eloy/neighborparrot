@@ -33,7 +33,7 @@ class ConnectionHandler < Goliath::API
 
   # Init Netighborparrot
   def initialize(opts = {})
-    super opts
+    @opts = opts
     prepare_input_queue
   end
 
