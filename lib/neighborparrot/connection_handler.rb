@@ -27,7 +27,7 @@ class ConnectionHandler < Goliath::API
 
   # use Goliath::Rack::Heartbeat
   # use Goliath::Rack::Validation::RequestMethod, %w(POST)
-  # use Goliath::Rack::Validation::RequiredParam, {:key => 'channel'}
+  use Goliath::Rack::Validation::RequiredParam, {:key => 'api_id'}
 
   #  plugin Goliath::Plugin::Latency       # output reactor latency every second
 
@@ -50,11 +50,13 @@ class ConnectionHandler < Goliath::API
   # Send message to the ChannelBroker
   # Generate a channel uuid
   def send(env)
+    use Goliath::Rack::Validation::RequestMethod, %w(POST)
     [200, {}, prepare_send_request(env)]
   end
 
 
   def open(env)
+    use Goliath::Rack::Validation::RequiredParam, {:key => 'channel'}
     env.trace 'open connection'
     EM.next_tick do
       env['np_connection'] = Neighborparrot::Connection.new(env)

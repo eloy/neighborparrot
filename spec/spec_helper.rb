@@ -1,11 +1,13 @@
-$LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..', 'lib'))
-$LOAD_PATH.unshift(File.dirname(__FILE__))
+# $LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..', 'lib'))
+# $LOAD_PATH.unshift(File.dirname(__FILE__))
+require 'bundler'
 
-require "rubygems"
-require 'rspec'
-require 'goliath'
+Bundler.setup
+Bundler.require
+
 require 'goliath/test_helper'
-require 'amqp'
+require 'em-http-request'
+require 'em-eventsource'
 
 # Requires supporting files with custom matchers and macros, etc,
 # in ./support/ and its subdirectories.

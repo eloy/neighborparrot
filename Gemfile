@@ -19,6 +19,7 @@ end
 group :test do
   gem 'em-http-request'
   gem 'em-eventsource'
+  gem 'yajl-ruby'
 end
 
 gem 'goliath'

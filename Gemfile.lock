@@ -81,6 +81,7 @@ GEM
     rspec-mocks (2.8.0)
     url_mount (0.2.1)
       rack
+    yajl-ruby (1.1.0)
 
 PLATFORMS
   ruby
@@ -97,3 +98,4 @@ DEPENDENCIES
   rake
   rcov
   rspec
+  yajl-ruby
