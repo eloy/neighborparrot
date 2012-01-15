@@ -37,7 +37,7 @@ describe Neighborparrot::Connection do
       end
     end
 
-    it 'should create a new queue and configure to call send_to_client when push some string' do
+    it 'should create a new queue and configure to send to the client when receibe data' do
       msg = 'test msg'
       EM.run do
         c = Neighborparrot::Connection.new(env)
@@ -77,7 +77,7 @@ describe Neighborparrot::Connection do
       c.subscribe
     end
 
-    it 'should configure the subsciption for receive messages' do
+    it 'should configure the subsciption for send to the connection messages from the channel' do
       EM.run do
         msg = 'test msg'
         c = Neighborparrot::Connection.new(env)
