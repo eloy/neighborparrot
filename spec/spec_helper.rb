@@ -4,7 +4,10 @@ require 'bundler'
 
 Bundler.setup
 Bundler.require
-
+require 'rspec'
+require 'rack'
+require 'rspec/mocks/standalone'
+require 'goliath'
 require 'goliath/test_helper'
 require 'em-http-request'
 require 'em-eventsource'

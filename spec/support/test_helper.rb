@@ -8,15 +8,10 @@ module Goliath
     def es_request(request_data = {}, errback = nil, &blk)
       path = request_data.delete(:path) || ''
       url = "http://localhost:#{@test_server_port}#{path}"
-      puts url
-      puts request_data
       source = EM::EventSource.new(url, request_data )
-      source.inactivity_timeout = 120
       source.message &blk if blk
-      source.error  &errback
-#      source.callback { stop }
+      source.error { errback }
       source.start
-      return source
     end
   end
 end

@@ -50,15 +50,8 @@ describe 'Connection Handler' do
   # Event Source open
   #---------------------------------------------
   describe 'open' do
-    it 'should open a connection with correct values' do
-      with_api(ConnectionHandler, :log_stdout => true) do
-      request_data = { :path => '/open', :channel => 'test', :api_id => 'key'  }
-        req = es_request(request_data, err) do |c|
-          c.response_header.status.should eq 200
-          req.stop
-        end
-      end
-    end
-  end
+    it 'should open a connection with correct values'
 
+    it 'should close the connection with incorrect values'
+  end
 end
