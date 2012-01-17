@@ -25,4 +25,5 @@ end
 gem 'goliath'
 gem 'rack'
 gem 'rack-multipart_related'
+gem 'em-websocket'
 gem 'amqp'

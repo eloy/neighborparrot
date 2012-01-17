@@ -1,0 +1,16 @@
+<html>
+<head>
+  <META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE">
+  <% if @use_polyfill %>
+    <script type="text/javascript" src="<%= @assets_url %>/js/websocket.js"></script>
+  <% end %>
+  <script type="text/javascript" src="<%= @assets_url %>/js/broker.js"></script>
+</head>
+<body>
+:-)
+<script>
+  broker = new WSBroker("<%= @server_url %>");
+  setTimeout(function() { broker.open(); }, 0);
+</script>
+</body>
+</html>

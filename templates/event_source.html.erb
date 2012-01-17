@@ -1,0 +1,16 @@
+<html>
+<head>
+  <META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE">
+  <% if use_polyfill %>
+    <script type="text/javascript" src="<%= @assets_url %>/js/eventsource.js"></script>
+  <% end %>
+  <script type="text/javascript" src="<%= @assets_url %>/js/broker.js"></script>
+</head>
+<body>
+:-)
+<script>
+  broker = new ESBroker("<%= @server_url %>");
+  setTimeout(function() { broker.open(); }, 0);
+</script>
+</body>
+</html>

@@ -33,6 +33,9 @@ GEM
       eventmachine
     em-synchrony (1.0.0)
       eventmachine (>= 1.0.0.beta.1)
+    em-websocket (0.3.6)
+      addressable (>= 2.1.1)
+      eventmachine (>= 0.12.9)
     eventmachine (1.0.0.beta.4)
     goliath (0.9.4)
       async-rack
@@ -92,6 +95,7 @@ DEPENDENCIES
   capistrano
   em-eventsource
   em-http-request
+  em-websocket
   goliath
   rack
   rack-multipart_related
