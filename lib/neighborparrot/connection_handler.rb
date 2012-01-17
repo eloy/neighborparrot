@@ -27,7 +27,7 @@ class ConnectionHandler < Goliath::API
 
   # use Goliath::Rack::Heartbeat
   # use Goliath::Rack::Validation::RequestMethod, %w(POST)
-  # use Goliath::Rack::Validation::RequiredParam, {:key => 'channel'}
+  # use Goliath::Rack::Validation::RequiredParam, {:key => 'api_id'}
 
   #  plugin Goliath::Plugin::Latency       # output reactor latency every second
 

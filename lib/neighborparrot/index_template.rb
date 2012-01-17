@@ -6,8 +6,6 @@ module Neighborparrot
   SERVER_URL = "https://neighborparrot.net"
   ASSETS_URL = "https://neighborparrot.com"
 
-
-
   def get_index_template(env)
     @template_cache = {} unless @template_cache
     use_polyfill = env.params['use_polyfill'] == 'true'
