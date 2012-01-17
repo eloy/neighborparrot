@@ -1,9 +1,6 @@
 require 'spec_helper'
-require 'neighborparrot'
 
-require 'pp'
-
-describe 'Connection Handler' do
+describe 'Root request' do
   let(:err) {|error| Proc.new { fail "API request failed #{error}" } }
 
   before :all do
@@ -45,13 +42,5 @@ describe 'Connection Handler' do
         end
       end
     end
-  end
-
-  # Event Source open
-  #---------------------------------------------
-  describe 'open' do
-    it 'should open a connection with correct values'
-
-    it 'should close the connection with incorrect values'
   end
 end
