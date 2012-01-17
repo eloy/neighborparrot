@@ -3,67 +3,78 @@ require 'goliath/api'
 require 'neighborparrot'
 require 'eventmachine'
 
-describe Neighborparrot::Connection do
-  let(:env) { double('env').as_null_object }
+class DummyClient
+  attr_accessor :queue, :broker, :env, :channel
+  include Neighborparrot::Connection
 
-  describe 'initialize' do
+  def fake_current_brokers(brokers)
+    @@channel_brokers = brokers
+  end
+
+  def fake_queue(queue)
+    @@global_input_queue = queue
+  end
+
+  def input_queue_nil?
+    @@global_input_queue.nil?
+  end
+end
+
+describe Neighborparrot::Connection do
+
+  before :each do
+    @env = double('env').as_null_object
+    @c = DummyClient.new
+    @c.fake_queue nil
+    @c.env = @env
+  end
+
+  # prepare_connection
+  #-----------------------------------------------
+  describe 'prepare_connection' do
     let(:queue) { double('queue').as_null_object }
     before :each do
-      env.stub(:params) { { :channel => 'test'} }
+      @c.env.stub(:params) { { :channel => 'test'} }
       EM::Queue.stub(:new) { queue }
     end
 
     it 'should init connection queue' do
+      @c.env.stub(:config) { { 'use_rabbit' => false }}
       init_stream = ": " << Array.new(2048, " ").join << "\n\n"
       queue.should_receive(:push).with(init_stream)
-      Neighborparrot::Connection.new(env)
+      @c.prepare_connection(@env)
     end
 
     it 'should subscribe to a channel' do
-      Neighborparrot::Connection.any_instance.should_receive(:subscribe)
-      Neighborparrot::Connection.new(env)
+      @c.should_receive(:subscribe)
+      @c.prepare_connection(@env)
     end
   end
 
+  # init_queue
+  #-----------------------------------------------
+
   describe 'init_queue' do
-    before :each do
-      module Neighborparrot
-
-        class Connection
-          attr_accessor :queue
-          def initialize(env)
-          end
-        end
-      end
-    end
-
     it 'should create a new queue and configure to send to the client when receibe data' do
       msg = 'test msg'
       EM.run do
-        c = Neighborparrot::Connection.new(env)
-        c.stub(:send_to_client) do |rec|
+        @c.stub(:send_to_client) do |rec|
           rec.should eq msg
           EM.stop
         end
-        c.init_queue
-        c.queue.push msg
+        @c.init_queue
+        @c.queue.push msg
         EM::Timer.new(1) { fail "Not received"; EM.stop }
       end
     end
   end
 
+  # subscribe
+  #-----------------------------------------------
+
   describe 'subscribe' do
     before :each do
-      module Neighborparrot
-        class Connection
-          attr_accessor :queue, :broker
-          def initialize(env)
-            @env = env
-            @channel = 'test-channel'
-          end
-        end
-      end
-
+      @c.channel = 'test-channel'
     end
 
     it 'should subscribe the connection to the desired channel' do
@@ -71,34 +82,116 @@ describe Neighborparrot::Connection do
       broker = double('broker').as_null_object
       broker.stub(:consumer_channel) { consumer_channel }
 
-      c = Neighborparrot::Connection.new(env)
-      c.stub(:get_channel).with(env, 'test-channel') { broker }
+      @c.stub(:get_channel).with(@env, 'test-channel') { broker }
       consumer_channel.should_receive(:subscribe)
-      c.subscribe
+      @c.subscribe
     end
 
     it 'should configure the subsciption for send to the connection messages from the channel' do
       EM.run do
         msg = 'test msg'
-        c = Neighborparrot::Connection.new(env)
         real_channel = EM::Channel.new
         broker = double('broker').as_null_object
         broker.stub(:consumer_channel) { real_channel }
-        c = Neighborparrot::Connection.new(env)
-        c.stub(:get_channel).with(env, 'test-channel') { broker }
+        @c.stub(:get_channel).with(@env, 'test-channel') { broker }
 
-        c.stub(:send_to_client) do |rec|
+        @c.stub(:send_to_client) do |rec|
           rec.should eq msg
           EM.stop
         end
-        c.init_queue
-        c.subscribe
+        @c.init_queue
+        @c.subscribe
         real_channel.push msg
         EM::Timer.new(1) { fail "Not received"; EM.stop }
       end
-
     end
-
   end
 
+  # Send stuff
+  #===============================================
+
+  # prepare_send_request
+  #-----------------------------------------------
+
+  describe 'prepare_send_request' do
+    before :each do
+      @env = Goliath::Env.new
+      @params = {}
+      @env.stub(:params) { @params }
+    end
+
+    it 'should add event id if not present' do
+      @c.should_receive(:generate_message_id)
+      @c.prepare_send_request @env
+    end
+
+    it 'should mantain event_if if present' do
+      @params['event_id'] = 1
+      @c.should_not_receive(:generate_message_id)
+      @c.prepare_send_request @env
+    end
+
+    it 'should send the the message to the input queue' do
+      queue = double('queue')
+      @c.fake_queue queue
+      queue.should_receive(:push)# .with(@env)
+      @c.prepare_send_request @env
+    end
+
+    it 'should return the new message id' do
+      @c.stub(:generate_message_id) { 333 }
+      @c.prepare_send_request(@env).should eq 333
+    end
+  end
+
+  # send_to_broker
+  #-----------------------------------------------
+
+  describe 'send_to_broker' do
+    before :each do
+      @c.stub(:env) { double('env').as_null_object }
+      @c.fake_current_brokers Hash.new
+    end
+
+    it 'should return nil if desired broker don not exist' do
+      @c.send_to_broker(:channel => 'invalid').should be_nil
+    end
+
+    it 'should send a packed message to the broker' do
+      EM.run do
+        msg = 'test message'
+        event = { :channel => 'test', :data => 'test sting', :event_id => 1 }
+        packed_msg = @c.pack_message_event event
+        fake_channel = double('channel_broker')
+        fake_channel.stub(:publish) do |msg|
+          msg.should eq packed_msg
+          EM.stop
+        end
+        brokers = { 'test' => fake_channel }
+        @c.stub(:env) { double('env').as_null_object }
+        @c.fake_current_brokers brokers
+
+        @c.send_to_broker(event).should_not be_nil
+        EM::Timer.new(1) { fail "Not called";  EM.stop }
+      end
+    end
+  end
+
+  # prepare_input_queue
+  #-----------------------------------------------
+
+  describe 'input_queue' do
+
+    it 'should configure the queue to send messages to the broker when push' do
+      EM.run do
+        event = { :channel => 'test', :data => 'test sting', :event_id => 1 }
+        @c.stub(:send_to_broker) do |received|
+          received.should eq event
+          EM.stop
+        end
+        @c.input_queue.push event
+        EM::Timer.new(1) { fail "Not called";  EM.stop }
+      end
+    end
+  end
 end

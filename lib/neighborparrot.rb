@@ -24,6 +24,12 @@ require 'goliath'
 #require 'neighborparrot/send_request'
 #require 'neighborparrot/connection_handler'
 
+require 'neighborparrot/protocol'
 require 'neighborparrot/constants'
+require 'neighborparrot/brokers/test_channel_broker'
+require 'neighborparrot/brokers/channel_broker'
+require 'neighborparrot/channel_broker_factory' # TODO: Refactor
+require 'neighborparrot/connection'
 require 'neighborparrot/static_index'
+require 'neighborparrot/event_source'
 require 'neighborparrot/router'

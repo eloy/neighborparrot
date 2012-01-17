@@ -1,5 +1,7 @@
 class Router < Goliath::API
 
-  get '/', StaticIndexEndPoint
+
+  get '/'        ,StaticIndexEndPoint
+  map '/open'    ,EventSourceEndPoint
 
 end

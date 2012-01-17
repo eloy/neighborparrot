@@ -1,13 +1,14 @@
 module Neighborparrot
-
   # Subscriber connection representation
-  class Connection
-    include Neighborparrot
+  module Connection
+
+    # Message counter
+    @@next_message_id = 1
 
     # Create a connection
     # Create a queue for the connection
     # Locate the desired channel and susbcribe thier queue to the channel
-    def initialize(env)
+    def prepare_connection(env)
       env.trace 'init connection'
       @env = env
       @channel = env.params['channel']
@@ -18,6 +19,10 @@ module Neighborparrot
       subscribe
     end
 
+    # Prepare output queue
+    # Messages to this user are pushed to this
+    # queue and it send the messages to
+    # send_to_client
     def init_queue
       @queue = EM::Queue.new
       processor = proc { |msg|
@@ -34,7 +39,7 @@ module Neighborparrot
     end
 
     def keep_alive_timer
-      @timer = EventMachine::PeriodicTimer.new(KEEP_ALIVE_TIMER) do
+      @timer = EventMachine::PeriodicTimer.new(Neighborparrot::KEEP_ALIVE_TIMER) do
         @queue.push ':\n\n' # Empty event stream
       end
     end
@@ -56,5 +61,58 @@ module Neighborparrot
       @env.logger.debug "unsubscribe custome from channel #{@channel}"
       @broker.consumer_channel.unsubscribe(@subscription_id)
     end
+
+    # Handle send request
+    def prepare_send_request(env)
+      env.trace 'prepare send request'
+      unless env.params['event_id']
+        env.params['event_id'] = generate_message_id
+      end
+      input_queue.push env.params
+      return env.params['event_id']
+    end
+
+    # Send the message to the broker for
+    # broadcast to other clients
+    def send_to_broker(request)
+      # env.logger.debug "Sent message to channel #{request[:channel]}"
+      env.trace 'looking channel'
+      broker = @@channel_brokers[request[:channel]]
+      env.trace 'sending to broker'
+      return if broker.nil?
+      # Send messages to broker is a slow task
+      EM.next_tick { broker.publish pack_message_event(request) }
+      env.trace 'sended to broker'
+    end
+
+    # Queue for input messages
+    # All incoming request are pushed to this queue
+    # and it send the request to send_to_broker
+    def input_queue
+      if @@global_input_queue.nil?
+        @@global_input_queue = EM::Queue.new
+        processor = proc { |request|
+          send_to_broker request
+          @@global_input_queue.pop(&processor)
+        }
+        @@global_input_queue.pop(&processor)
+      end
+      return @@global_input_queue
+    end
+
+    # Generate the message ID to be used as incoming reguest
+    def generate_message_id
+      @@next_message_id += 1
+    end
+
+    # Prepare a message as data message
+    def pack_message_event(request)
+      return "id:#{request[:event_id]}\ndata:#{request[:data]}\n\n"
+    end
+
+    # All incoming request are pushed to this queue
+    # and it send the request to send_to_broker
+    private
+    @@global_input_queue = nil
   end
 end
