@@ -1,10 +1,13 @@
-require 'goliath/websocket'
-class WebsocketEndPoint < Goliath::WebSocket
-  include Neighborparrot
+#require 'goliath/websocket'
+
+class WebSocketEndPoint < Goliath::WebSocket
+  include Neighborparrot::Connection
+  include Neighborparrot::Auth
 
   def on_open(env)
-    env.logger.info("WS OPEN")
-    env['subscription'] = env.channel.subscribe { |m| env.stream_send(m) }
+    validate_connection_params env.params
+#    env.logger.info("WS OPEN")
+#    env['subscription'] = env.channel.subscribe { |m| env.stream_send(m) }
   end
 
   def on_message(env, msg)

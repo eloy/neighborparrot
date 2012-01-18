@@ -5,6 +5,7 @@ require 'rack/multipart'
 require 'rack/multipart/parser'
 require "rubygems"
 require 'goliath'
+require 'goliath/websocket'
 
 
 
@@ -24,12 +25,14 @@ require 'goliath'
 #require 'neighborparrot/send_request'
 #require 'neighborparrot/connection_handler'
 
-require 'neighborparrot/protocol'
 require 'neighborparrot/constants'
 require 'neighborparrot/brokers/test_channel_broker'
 require 'neighborparrot/brokers/channel_broker'
 require 'neighborparrot/channel_broker_factory' # TODO: Refactor
+require 'neighborparrot/mongo'
+require 'neighborparrot/auth'
 require 'neighborparrot/connection'
 require 'neighborparrot/static_index'
 require 'neighborparrot/event_source'
+require 'neighborparrot/web_sockets'
 require 'neighborparrot/router'

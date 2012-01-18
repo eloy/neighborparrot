@@ -22,8 +22,10 @@ group :test do
   gem 'yajl-ruby'
 end
 
-gem 'goliath'
+gem 'goliath', :git => 'https://github.com/postrank-labs/goliath.git'
 gem 'rack'
 gem 'rack-multipart_related'
 gem 'em-websocket'
+gem 'em-mongo'
+gem 'bson_ext'
 gem 'amqp'
