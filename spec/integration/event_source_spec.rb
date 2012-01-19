@@ -8,7 +8,7 @@ describe 'Event source connection' do
   describe 'open' do
     it 'should open a connection with correct values' do
       init_stream = ": " << Array.new(2048, " ").join << "\n\n"
-      with_api(ConnectionHandler, { :verbose => true, :log_stdout => true}) do
+      with_api(Router, { :verbose => true, :log_stdout => true}) do
         request_data = { :path => '/open', :query => { :channel => 'test' }, :keep_alive => true }
         aget_request(request_data, err) do |c|
           c.should eq init_stream
@@ -20,7 +20,7 @@ describe 'Event source connection' do
     it 'should receive messages' do
       init_stream = ": " << Array.new(2048, " ").join << "\n\n"
       test_msg = 'test message'
-      with_api(ConnectionHandler, { :verbose => true, :log_stdout => true}) do
+      with_api(Router, { :verbose => true, :log_stdout => true}) do
         request_data = { :path => '/open', :query => { :channel => 'test' }, :keep_alive => true }
         aget_request(request_data, err) do |c|
           unless c.match '^:'

@@ -9,7 +9,7 @@ describe 'Root request' do
 
   describe 'invalid connections' do
     it 'shound deny invalids paths' do
-      with_api(ConnectionHandler, :log_stdout => true) do
+      with_api(Router, :log_stdout => true) do
         request_data = { :path => '/moco', :query => { :api_id => 'test' } }
         get_request(request_data, err) do |c|
           c.response_header.status.should eq 404
@@ -22,8 +22,8 @@ describe 'Root request' do
   #---------------------------------------------
   describe 'index.html' do
     it 'shound allow incoming connections with correct params' do
-      with_api(ConnectionHandler) do
-        request_data = { :path => '/', :query => {:api_id => 'test'} }
+      with_api(Router) do
+        request_data = { :path => '/', :query => {:api_id => 'test', :service => 'es'} }
         get_request(request_data, err) do |c|
           c.response.should match ':-\)'
           c.response.should match 'https://neighborparrot.com/js/broker.js'
@@ -34,8 +34,8 @@ describe 'Root request' do
     end
 
     it 'should add polyfill if requested' do
-      with_api(ConnectionHandler) do
-        request_data = { :path => '/', :query => {:api_id => 'test', :use_polyfill => 'true' } }
+      with_api(Router) do
+        request_data = { :path => '/', :query => {:api_id => 'test', :use_polyfill => 'true', :service => 'es' } }
         get_request(request_data, err) do |c|
           c.response.should match 'https://neighborparrot.com/js/eventsource.js'
           stop

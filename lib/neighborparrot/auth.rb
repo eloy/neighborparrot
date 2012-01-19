@@ -1,3 +1,5 @@
+require 'hmac-sha2'
+
 module Neighborparrot
   module Auth
     include Neighborparrot::Mongo
@@ -21,32 +23,50 @@ module Neighborparrot
 
     # Check authorization
     # retrive application information and
-    # return true if success. Error is raised otherwise
+    # exec block code if the request have a valid signature
     def auth_connection_request(&blk)
-      @app_info = Neighborparrot::Application.get_application @api_id
-      if @app_info
-        validate_signature
-        blk.call resp
+      signature = connection_signature = env.params['connect_signature']
+      @application = Neighborparrot::Application.get_application @api_id
+      # If cached app use it
+      if @application
+        valid = valid_signature? connection_string, @application.api_key, signature
+        raise Goliath::Validation::BadRequestError.new("invalid signature") unless valid
+        blk.call @application
+        return
       end
+      # Asyc create the application
       resp = mongo_first 'app_info', { :api_id => @api_id }
       resp.callback do |app_info|
         raise Goliath::Validation::BadRequestError.new("invalid signature") unless app_info
-        @app_info = Neighborparrot::Application.generate app_info
+        @application = Neighborparrot::Application.generate app_info
 
         # Check auth
-        blk.call resp
+        valid = valid_signature? connection_string, @application.api_key, signature
+        raise Goliath::Validation::BadRequestError.new("invalid signature") unless valid
+        blk.call @application
       end
     end
 
+    # Create a connection string with this format
+    # api_id:socket_id:timestamp
     def connection_string
       timestamp = env.params['timestamp']
       str = [@api_id, @socket_id, timestamp].join ':'
     end
 
-    private
+    # Generate a valid signature
+    def create_signature(string, api_key)
+      HMAC::SHA256.hexdigest api_key, string
+    end
+
+    # Return a unix UTC timestamp
+    def current_timestamp
+      Time.new.utc.to_i
+    end
+
     # check string signature
-    def valid_signature(string, api_key)
-      connection_signature = env.params['connection_signature']
+    def valid_signature?(string, api_key, signature)
+      create_signature(string, api_key) == signature
     end
   end
 end
