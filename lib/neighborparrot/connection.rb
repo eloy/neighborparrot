@@ -44,10 +44,11 @@ module Neighborparrot
       end
     end
 
+    # Subscribe to desired channel
     def subscribe
       @env.trace 'subscribing'
       @env.logger.debug "Subscribing the connection to the channel"
-      @broker = get_channel(@env, @channel)
+      @broker = @application.get_broker(@channel)
       @subscription_id = @broker.consumer_channel.subscribe do |msg|
         @queue.push msg
       end
@@ -76,12 +77,12 @@ module Neighborparrot
     # broadcast to other clients
     def send_to_broker(request)
       # env.logger.debug "Sent message to channel #{request[:channel]}"
-      env.trace 'looking channel'
-      broker = @@channel_brokers[request[:channel]]
       env.trace 'sending to broker'
-      return if broker.nil?
       # Send messages to broker is a slow task
-      EM.next_tick { broker.publish pack_message_event(request) }
+      EM.next_tick do
+        message = pack_message_event(request)
+        @application.send_message_to_channel request[:channel], message
+      end
       env.trace 'sended to broker'
     end
 

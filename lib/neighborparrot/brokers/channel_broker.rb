@@ -4,9 +4,7 @@ class ChannelBroker
   attr_reader :consumer_channel
 
   # Initialize EM channel for internal distribution
-  def initialize(env, channel)
-    @channel = channel
-    @logger = env.logger
+  def initialize(channel)
     @consumer_channel = EM::Channel.new
   end
 

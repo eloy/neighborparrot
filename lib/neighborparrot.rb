@@ -28,7 +28,6 @@ require 'goliath/websocket'
 require 'neighborparrot/constants'
 require 'neighborparrot/brokers/test_channel_broker'
 require 'neighborparrot/brokers/channel_broker'
-require 'neighborparrot/channel_broker_factory' # TODO: Refactor
 require 'neighborparrot/application'
 require 'neighborparrot/mongo'
 require 'neighborparrot/auth'

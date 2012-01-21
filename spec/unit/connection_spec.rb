@@ -4,7 +4,7 @@ require 'neighborparrot'
 require 'eventmachine'
 
 class DummyClient
-  attr_accessor :queue, :broker, :env, :channel
+  attr_accessor :queue, :broker, :env, :channel, :application
   include Neighborparrot::Connection
 
   def fake_current_brokers(brokers)
@@ -27,6 +27,7 @@ describe Neighborparrot::Connection do
     @c = DummyClient.new
     @c.fake_queue nil
     @c.env = @env
+    @c.application = factory_application @env
   end
 
   # prepare_connection
@@ -60,11 +61,11 @@ describe Neighborparrot::Connection do
       EM.run do
         @c.stub(:send_to_client) do |rec|
           rec.should eq msg
-          EM.stop
+          schedule_em_stop
         end
         @c.init_queue
         @c.queue.push msg
-        EM::Timer.new(1) { fail "Not received"; EM.stop }
+        EM::Timer.new(1) { fail "Not received"; schedule_em_stop }
       end
     end
   end
@@ -82,7 +83,7 @@ describe Neighborparrot::Connection do
       broker = double('broker').as_null_object
       broker.stub(:consumer_channel) { consumer_channel }
 
-      @c.stub(:get_channel).with(@env, 'test-channel') { broker }
+      @c.application.stub(:get_broker).with('test-channel') { broker }
       consumer_channel.should_receive(:subscribe)
       @c.subscribe
     end
@@ -93,16 +94,16 @@ describe Neighborparrot::Connection do
         real_channel = EM::Channel.new
         broker = double('broker').as_null_object
         broker.stub(:consumer_channel) { real_channel }
-        @c.stub(:get_channel).with(@env, 'test-channel') { broker }
+        @c.application.stub(:get_broker).with('test-channel') { broker }
 
         @c.stub(:send_to_client) do |rec|
           rec.should eq msg
-          EM.stop
+          schedule_em_stop
         end
         @c.init_queue
         @c.subscribe
         real_channel.push msg
-        EM::Timer.new(1) { fail "Not received"; EM.stop }
+        EM::Timer.new(1) { fail "Not received"; schedule_em_stop }
       end
     end
   end
@@ -150,29 +151,21 @@ describe Neighborparrot::Connection do
   describe 'send_to_broker' do
     before :each do
       @c.stub(:env) { double('env').as_null_object }
-      @c.fake_current_brokers Hash.new
     end
 
-    it 'should return nil if desired broker don not exist' do
-      @c.send_to_broker(:channel => 'invalid').should be_nil
-    end
-
-    it 'should send a packed message to the broker' do
+    it 'should send a packed message to the application' do
       EM.run do
         msg = 'test message'
         event = { :channel => 'test', :data => 'test sting', :event_id => 1 }
         packed_msg = @c.pack_message_event event
-        fake_channel = double('channel_broker')
-        fake_channel.stub(:publish) do |msg|
+        @c.application.stub(:send_message_to_channel) do |channel, msg|
+          channel.should eq event[:channel]
           msg.should eq packed_msg
-          EM.stop
+          schedule_em_stop
         end
-        brokers = { 'test' => fake_channel }
-        @c.stub(:env) { double('env').as_null_object }
-        @c.fake_current_brokers brokers
-
+        @c.input_queue # EM Crazy errors
         @c.send_to_broker(event).should_not be_nil
-        EM::Timer.new(1) { fail "Not called";  EM.stop }
+        EM::Timer.new(1) { fail "Not called";  schedule_em_stop }
       end
     end
   end
@@ -187,10 +180,10 @@ describe Neighborparrot::Connection do
         event = { :channel => 'test', :data => 'test sting', :event_id => 1 }
         @c.stub(:send_to_broker) do |received|
           received.should eq event
-          EM.stop
+          schedule_em_stop
         end
         @c.input_queue.push event
-        EM::Timer.new(1) { fail "Not called";  EM.stop }
+        EM::Timer.new(1) { fail "Not called";  schedule_em_stop }
       end
     end
   end

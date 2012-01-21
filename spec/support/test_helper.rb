@@ -29,13 +29,18 @@ module Goliath
   end
 end
 
+
+def schedule_em_stop
+  EM.next_tick { EM.stop }
+end
+
 def factory_app_info
   { :api_id => 'test-id', :api_key => '7ad3773142a6692b25b8' }
 end
 
-def factory_application(app_info=nil)
+def factory_application(env, app_info=nil)
   app_info = factory_app_info if app_info.nil?
-  app = Neighborparrot::Application.new app_info
+  app = Neighborparrot::Application.new(env, app_info)
   return app
 end
 

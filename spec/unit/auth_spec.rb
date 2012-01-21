@@ -68,7 +68,7 @@ describe Neighborparrot::Auth do
     describe 'with cached appication' do
       before :each do
         @app_info = factory_app_info
-        @app = factory_application @app_info
+        @app = factory_application @auth.env, @app_info
         @request = factory_connect_request @app_info
         Neighborparrot::Application.stub(:get_application) { @app }
       end
@@ -112,7 +112,7 @@ describe Neighborparrot::Auth do
     describe 'without cached appication' do
       before :each do
         @app_info = factory_app_info
-        @app = factory_application @app_info
+        @app = factory_application @auth.env, @app_info
         @request = factory_connect_request @app_info
         Neighborparrot::Application.stub(:get_application) { nil }
       end

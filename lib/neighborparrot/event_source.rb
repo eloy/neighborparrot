@@ -29,8 +29,8 @@ class EventSourceEndPoint < Goliath::API
     validate_connection_params env.params # Ensure required parameters
 
     EM.next_tick do
-      auth_connection_request do |app_info|
-        env.logger.info  "Ok #{app_info}"
+      auth_connection_request do |app|
+       prepare_connection
       end
     end
 
