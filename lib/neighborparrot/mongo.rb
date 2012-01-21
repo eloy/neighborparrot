@@ -6,7 +6,7 @@ module Neighborparrot
     @@db = nil
 
     def mongo_connect
-      @@db = EM::Mongo::Connection.new('localhost').db('nparrot')
+      @@db = EM::Mongo::Connection.new('localhost').db('nparrot-test')
     end
 
     def mongo_connected?
@@ -22,7 +22,6 @@ module Neighborparrot
       resp = mongo_db.collection(collection).first(query)
       attach_errback resp
     end
-
 
     private
     def attach_errback(response)

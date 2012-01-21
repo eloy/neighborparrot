@@ -38,23 +38,23 @@ describe Neighborparrot::Auth do
       expect { @auth.validate_connection_params }.should raise_error
     end
 
-    it 'should failt without connect_signature' do
+    it 'should failt without signature' do
       @auth.env.stub(:params) { { 'api_id' => 'test', 'socket_id' => '123456' } }
       expect { @auth.validate_connection_params }.should raise_error
     end
 
     it 'should failt without timestamp' do
-      @auth.env.stub(:params) { { 'api_id' => 'test', 'socket_id' => '123456', 'connect_signature' => 'md5' } }
+      @auth.env.stub(:params) { { 'api_id' => 'test', 'socket_id' => '123456', 'signature' => 'md5' } }
       expect { @auth.validate_connection_params }.should raise_error
     end
 
     it 'should pass with valid params' do
-      @auth.env.stub(:params) { { 'api_id' => 'test', 'socket_id' => '123456', 'connect_signature' => 'md5', 'timestamp' => 1234 } }
+      @auth.env.stub(:params) { { 'api_id' => 'test', 'socket_id' => '123456', 'signature' => 'md5', 'timestamp' => 1234 } }
       @auth.validate_connection_params
     end
 
     it 'should set instance vars' do
-      @auth.env.stub(:params) { { 'api_id' => 'test', 'socket_id' => '123456', 'connect_signature' => 'md5', 'timestamp' => 1234 } }
+      @auth.env.stub(:params) { { 'api_id' => 'test', 'socket_id' => '123456', 'signature' => 'md5', 'timestamp' => 1234 } }
       @auth.validate_connection_params
       @auth.api_id.should eq 'test'
       @auth.socket_id.should eq '123456'
@@ -147,7 +147,7 @@ describe Neighborparrot::Auth do
 
   describe 'connection_string' do
     it 'should return api_id:socket_id:timestamp without channel' do
-      params = { 'api_id' => 'test', 'socket_id' => '123456', 'connect_signature' => 'md5' , 'timestamp' => 123 }
+      params = { 'api_id' => 'test', 'socket_id' => '123456', 'signature' => 'md5' , 'timestamp' => 123 }
       @auth.env.stub(:params) { params }
       @auth.validate_connection_params
       @auth.connection_string.should eq 'test:123456:123'

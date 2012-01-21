@@ -19,11 +19,6 @@ describe EventSourceEndPoint do
       @es.response @env
     end
 
-    it 'should call auth_connection_request' do
-      @env.stub(:params) { { 'a' => 'a'}}
-      @es.stub(:validate_connection_params) { true }
-      @es.should_receive(:auth_connection_request)
-      @es.response @env
-    end
+    it 'should call auth_connection_request'
   end
 end

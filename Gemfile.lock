@@ -97,6 +97,7 @@ GEM
     ruby-hmac (0.4.0)
     url_mount (0.2.1)
       rack
+    uuidtools (2.1.2)
     yajl-ruby (1.1.0)
 
 PLATFORMS
@@ -118,4 +119,5 @@ DEPENDENCIES
   rcov
   rspec
   ruby-hmac
+  uuidtools
   yajl-ruby

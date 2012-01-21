@@ -1,4 +1,5 @@
 require 'spec_helper'
+require 'hmac-sha2'
 
 describe 'Event source connection' do
   let(:err) {|error| Proc.new { fail "API request failed #{error}" } }
@@ -8,8 +9,12 @@ describe 'Event source connection' do
   describe 'open' do
     it 'should open a connection with correct values' do
       init_stream = ": " << Array.new(2048, " ").join << "\n\n"
+      app_info = factory_app_info
+      request = factory_connect_request app_info
       with_api(Router, { :verbose => true, :log_stdout => true}) do
-        request_data = { :path => '/open', :query => { :channel => 'test' }, :keep_alive => true }
+        mongo_db.collection('app_info').insert app_info # Store mongo fixature after start EM
+
+        request_data = { :path => '/open', :query => request[:params].merge(:channel => 'test'), :keep_alive => true }
         aget_request(request_data, err) do |c|
           c.should eq init_stream
           EM.stop

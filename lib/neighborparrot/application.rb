@@ -15,8 +15,8 @@ module Neighborparrot
     def initialize(env, app_info)
       @env = env
       @app_info = app_info
-      @api_id = @app_info[:api_id]
-      @api_key = @app_info[:api_key]
+      @api_id = @app_info['api_id']
+      @api_key = @app_info['api_key']
       @brokers = {}
     end
 

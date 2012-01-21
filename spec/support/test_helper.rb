@@ -4,7 +4,6 @@ require 'hmac-sha2'
 
 module Goliath
   module TestHelper
-    include Neighborparrot::Auth
 
     # Make a GET request asyncrony to the currently launched API.
     #
@@ -29,13 +28,16 @@ module Goliath
   end
 end
 
+include Neighborparrot::Auth
 
 def schedule_em_stop
   EM.next_tick { EM.stop }
 end
 
 def factory_app_info
-  { :api_id => 'test-id', :api_key => '7ad3773142a6692b25b8' }
+  api_id =  UUIDTools::UUID.random_create.to_s
+  api_key =  UUIDTools::UUID.random_create.to_s
+  info = { :api_id => api_id, :api_key => api_key }
 end
 
 def factory_application(env, app_info=nil)
@@ -47,19 +49,19 @@ end
 def factory_connect_request(app_info=nil)
   app_info = factory_app_info if app_info.nil?
   timestamp = Time.new.utc.to_i
-  socket_id = '23456'
-  string = "test:123456:#{timestamp}"
+  socket_id = UUIDTools::UUID.random_create.to_s
+  string = "#{app_info[:api_id]}:#{socket_id}:#{timestamp}"
   signature = HMAC::SHA256.hexdigest app_info[:api_key], string
   req = {
     :app_info => app_info,
-    :socket_id => '123456',
+    :socket_id => socket_id,
     :timestamp => timestamp,
     :connection_string => string,
     :signature => signature,
     :params => {
       'api_id' => app_info[:api_id],
       'socket_id' => socket_id,
-      'connect_signature' => signature ,
+      'signature' => signature ,
       'timestamp' => timestamp
     }
   }

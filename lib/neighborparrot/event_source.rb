@@ -26,11 +26,11 @@ class EventSourceEndPoint < Goliath::API
   # Prepare the event source connection
   def response(env)
     env.trace 'open connection'
-    validate_connection_params env.params # Ensure required parameters
+    validate_connection_params # Ensure required parameters
 
     EM.next_tick do
       auth_connection_request do |app|
-       prepare_connection
+       prepare_connection env
       end
     end
 
