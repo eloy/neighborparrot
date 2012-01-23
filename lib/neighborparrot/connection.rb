@@ -34,7 +34,7 @@ module Neighborparrot
 
     def send_to_client(msg)
       @env.trace 'sending_chunk'
-      @env.logger.debug "Send message #{msg} to connection X in channel #{@channel}"
+      # @env.logger.debug "Send message #{msg} to connection X in channel #{@channel}"
       @env.chunked_stream_send msg
     end
 

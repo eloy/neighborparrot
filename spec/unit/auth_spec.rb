@@ -31,28 +31,25 @@ describe Neighborparrot::Auth do
   describe 'valid_signature?' do
     it 'should return false without signature' do
       app_info = factory_app_info
-      @auth.application = Neighborparrot::Application.generate({ }, app_info)
       @auth.env = { 'REQUEST_METHOD' => 'GET', 'REQUEST_PATH' => '/open'}
       @auth.env.stub(:params) { { :channel => 'test' }}
-      @auth.valid_signature?.should be_false
+      @auth.valid_signature?(app_info).should be_false
     end
 
     it 'should return false with invalid signature' do
       app_info = factory_app_info
-      @auth.application = Neighborparrot::Application.generate({ }, app_info)
       @auth.env = { 'REQUEST_METHOD' => 'GET', 'REQUEST_PATH' => '/open'}
       signed = sign_connect_request({ :channel => 'test' }, { 'api_id' => app_info['api_id'], 'api_key' => 'other key'})
       @auth.env.stub(:params) { signed }
-      @auth.valid_signature?.should be_false
+      @auth.valid_signature?(app_info).should be_false
     end
 
     it 'should return true with valid signature' do
       app_info = factory_app_info
-      @auth.application = Neighborparrot::Application.generate({ }, app_info)
       @auth.env = { 'REQUEST_METHOD' => 'GET', 'REQUEST_PATH' => '/open'}
       signed = sign_connect_request({ :channel => 'test' }, app_info)
       @auth.env.stub(:params) { signed }
-      @auth.valid_signature?.should be_true
+      @auth.valid_signature?(app_info).should be_true
     end
 
   end
@@ -92,45 +89,23 @@ describe Neighborparrot::Auth do
       @app_info = factory_app_info
       @app = factory_application @auth.env, @app_info
       @request = factory_connect_request @app_info
-      Neighborparrot::Application.stub(:get_application) { @app }
-    end
-
-
-
-
-    it 'should not look for app in mongo' do
-      @auth.env.stub(:params) { Hash.new }
-      @auth.stub(:valid_signature?) { true }
-      @auth.api_id = @app.api_id
-      Neighborparrot::Application.should_receive(:get_application).with(@app.api_id)
-      @auth.should_not_receive(:mongo_first)
-      @auth.auth_request { }
-    end
-
-    it 'should check if valid signature' do
-      @auth.env.stub(:params) { @request[:params] }
-      @auth.stub(:valid_signature?) { true }
-      @auth.stub(:connection_string) { @request[:connection_string] }
-      @auth.should_receive(:valid_signature?)
-      @auth.auth_request { }
     end
 
     it 'should call block if valid signature' do
       @auth.env.stub(:params) { Hash.new }
+      app_info = factory_app_info
+      @auth.api_id = app_info['api_id']
       @auth.stub(:valid_signature?) { true }
-      @auth.should_not_receive(:mongo_first)
-      auth = false
-      @auth.auth_request{ auth = true }
-      auth.should be_true
-    end
 
-    it 'should raise error and not run block if invalid signature' do
-      @auth.env.stub(:params) { Hash.new }
-      @auth.stub(:valid_signature?) { false }
-      @auth.should_not_receive(:mongo_first)
-      auth = false
-      expect { @auth.auth_request{ auth = true } }.should raise_error
-      auth.should be_false
+      EM.run do
+        mongo_db.collection('app_info').insert app_info
+        @auth.auth_request do | application |
+          application.api_id.should eq app_info['api_id']
+          schedule_em_stop
+        end
+
+        EM::Timer.new(1) { fail "Not called";  schedule_em_stop }
+      end
     end
   end
 end

@@ -166,7 +166,7 @@ describe Neighborparrot::Connection do
           schedule_em_stop
         end
         @c.input_queue # EM Crazy errors
-        @c.send_to_broker(event).should_not be_nil
+        @c.send_to_broker(event)
         EM::Timer.new(1) { fail "Not called";  schedule_em_stop }
       end
     end

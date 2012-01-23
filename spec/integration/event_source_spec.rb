@@ -11,7 +11,7 @@ describe 'Event source connection' do
       init_stream = ": " << Array.new(2048, " ").join << "\n\n"
       app_info = factory_app_info
       request = factory_connect_request app_info
-      with_api(Router, { :verbose => true, :log_stdout => true}) do
+      with_api(Router, { :verbose => false, :log_stdout => false}) do
         mongo_db.collection('app_info').insert app_info # Store mongo fixature after start EM
 
         request_data = { :path => '/open', :query => request[:params], :keep_alive => true }
@@ -29,7 +29,8 @@ describe 'Event source connection' do
       post_body = { 'channel' => 'test',  'data' => test_msg }
       signed_body = sign_send_request(post_body, app_info)
       request = factory_connect_request app_info
-      with_api(Router, { :verbose => true, :log_stdout => true}) do
+
+      with_api(Router, { :verbose => false, :log_stdout => false}) do
         mongo_db.collection('app_info').insert app_info # Store mongo fixature after start EM
         request_data = { :path => '/open', :query => request[:params], :keep_alive => true }
         aget_request(request_data, err) do |c|

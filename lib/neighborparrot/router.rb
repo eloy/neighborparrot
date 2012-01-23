@@ -1,8 +1,11 @@
 class Router < Goliath::API
 
+  def response(env)
+    raise Goliath::Validation::NotFoundError
+  end
 
   get '/'        ,StaticIndexEndPoint
   map '/open'    ,EventSourceEndPoint
-  map '/send'    ,SendRequestEndPoint
+  post '/send'    ,SendRequestEndPoint
 
 end

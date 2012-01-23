@@ -45,8 +45,9 @@ module Neighborparrot
     # exec block code if the request have a valid signature
     def auth_request(&blk)
       @application = Neighborparrot::Application.get_application @api_id
-      mongo_req = mongo_first('app_info', 'api_id' => @api_id)
+      mongo_req = mongo_first('app_info', :api_id => @api_id)
       mongo_req.callback do |app_info|
+        raise Goliath::Validation::BadRequestError.new("invalid application #{@api_id}") unless app_info
         raise Goliath::Validation::BadRequestError.new("invalid signature") unless valid_signature? app_info
         blk.call @application
       end

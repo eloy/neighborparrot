@@ -45,7 +45,7 @@ end
 
 def factory_application(env, app_info=nil)
   app_info = factory_app_info if app_info.nil?
-  app = Neighborparrot::Application.new(env, app_info)
+  app = Neighborparrot::Application.new(app_info['api_id'])
   return app
 end
 

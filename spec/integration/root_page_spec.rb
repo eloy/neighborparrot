@@ -9,7 +9,7 @@ describe 'Root request' do
 
   describe 'invalid connections' do
     it 'shound deny invalids paths' do
-      with_api(Router, :log_stdout => true) do
+      with_api(Router) do
         request_data = { :path => '/moco', :query => { :api_id => 'test' } }
         get_request(request_data, err) do |c|
           c.response_header.status.should eq 404
