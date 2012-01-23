@@ -95,6 +95,8 @@ GEM
       diff-lcs (~> 1.1.2)
     rspec-mocks (2.8.0)
     ruby-hmac (0.4.0)
+    signature (0.1.2)
+      ruby-hmac
     url_mount (0.2.1)
       rack
     uuidtools (2.1.2)
@@ -119,5 +121,6 @@ DEPENDENCIES
   rcov
   rspec
   ruby-hmac
+  signature
   uuidtools
   yajl-ruby

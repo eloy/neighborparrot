@@ -1,3 +1,4 @@
+require 'pp'
 class EventSourceEndPoint < Goliath::API
   include Neighborparrot::Connection
   include Neighborparrot::Auth

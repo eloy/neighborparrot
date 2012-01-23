@@ -15,7 +15,7 @@ describe EventSourceEndPoint do
   describe 'respone' do
     it 'should call validate params' do
       @env.stub(:params) { { 'a' => 'a'}}
-      @es.should_receive(:validate_connection_params).with(@env.params)
+      @es.should_receive(:validate_connection_params)
       @es.response @env
     end
 

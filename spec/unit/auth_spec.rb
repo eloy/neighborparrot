@@ -3,7 +3,7 @@ require 'neighborparrot'
 
 class DummyAuth
   include Neighborparrot::Auth
-  attr_accessor :api_id, :socket_id
+  attr_accessor :api_id, :socket_id, :env, :application
   def env
     @env
   end
@@ -24,6 +24,39 @@ describe Neighborparrot::Auth do
     @auth = DummyAuth.new
   end
 
+
+  # valid_signature
+  #-----------------------------------------------
+
+  describe 'valid_signature?' do
+    it 'should return false without signature' do
+      app_info = factory_app_info
+      @auth.application = Neighborparrot::Application.generate({ }, app_info)
+      @auth.env = { 'REQUEST_METHOD' => 'GET', 'REQUEST_PATH' => '/open'}
+      @auth.env.stub(:params) { { :channel => 'test' }}
+      @auth.valid_signature?.should be_false
+    end
+
+    it 'should return false with invalid signature' do
+      app_info = factory_app_info
+      @auth.application = Neighborparrot::Application.generate({ }, app_info)
+      @auth.env = { 'REQUEST_METHOD' => 'GET', 'REQUEST_PATH' => '/open'}
+      signed = sign_connect_request({ :channel => 'test' }, { 'api_id' => app_info['api_id'], 'api_key' => 'other key'})
+      @auth.env.stub(:params) { signed }
+      @auth.valid_signature?.should be_false
+    end
+
+    it 'should return true with valid signature' do
+      app_info = factory_app_info
+      @auth.application = Neighborparrot::Application.generate({ }, app_info)
+      @auth.env = { 'REQUEST_METHOD' => 'GET', 'REQUEST_PATH' => '/open'}
+      signed = sign_connect_request({ :channel => 'test' }, app_info)
+      @auth.env.stub(:params) { signed }
+      @auth.valid_signature?.should be_true
+    end
+
+  end
+
   # validate_connection_params
   #-----------------------------------------------
 
@@ -38,23 +71,13 @@ describe Neighborparrot::Auth do
       expect { @auth.validate_connection_params }.should raise_error
     end
 
-    it 'should failt without signature' do
-      @auth.env.stub(:params) { { 'api_id' => 'test', 'socket_id' => '123456' } }
-      expect { @auth.validate_connection_params }.should raise_error
-    end
-
-    it 'should failt without timestamp' do
-      @auth.env.stub(:params) { { 'api_id' => 'test', 'socket_id' => '123456', 'signature' => 'md5' } }
-      expect { @auth.validate_connection_params }.should raise_error
-    end
-
     it 'should pass with valid params' do
-      @auth.env.stub(:params) { { 'api_id' => 'test', 'socket_id' => '123456', 'signature' => 'md5', 'timestamp' => 1234 } }
+      @auth.env.stub(:params) { { 'auth_key' => 'test', 'socket_id' => '123456', 'signature' => 'md5', 'timestamp' => 1234 } }
       @auth.validate_connection_params
     end
 
     it 'should set instance vars' do
-      @auth.env.stub(:params) { { 'api_id' => 'test', 'socket_id' => '123456', 'signature' => 'md5', 'timestamp' => 1234 } }
+      @auth.env.stub(:params) { { 'auth_key' => 'test', 'socket_id' => '123456', 'signature' => 'md5', 'timestamp' => 1234 } }
       @auth.validate_connection_params
       @auth.api_id.should eq 'test'
       @auth.socket_id.should eq '123456'
@@ -86,7 +109,7 @@ describe Neighborparrot::Auth do
         @auth.env.stub(:params) { @request[:params] }
         @auth.stub(:valid_signature?) { true }
         @auth.stub(:connection_string) { @request[:connection_string] }
-        @auth.should_receive(:valid_signature?).with(@request[:connection_string], @app.api_key, @request[:signature])
+        @auth.should_receive(:valid_signature?)
         @auth.auth_connection_request { }
       end
 
@@ -122,35 +145,6 @@ describe Neighborparrot::Auth do
       it 'should call block if valid signature'
       it 'should raise error and not run block if invalid signature'
 
-    end
-  end
-
-  # validate_signature
-  #-----------------------------------------------
-
-  describe 'validate_signature' do
-    it 'should validate a valid signature' do
-      request = factory_connect_request
-      @auth.valid_signature?(request[:connection_string], request[:app_info][:api_key], request[:signature]).should be_true
-    end
-
-    it 'should not validate an invalid signature' do
-      request = factory_connect_request
-      @auth.valid_signature?(request[:connection_string] + ".", request[:app_info][:api_key],  request[:signature]).should be_false
-      @auth.valid_signature?(request[:connection_string], request[:app_info][:api_key]+".",  request[:signature]).should be_false
-      @auth.valid_signature?(request[:connection_string], request[:app_info][:api_key],  request[:signature] + ".").should be_false
-    end
-  end
-
-  # connection_string
-  #-----------------------------------------------
-
-  describe 'connection_string' do
-    it 'should return api_id:socket_id:timestamp without channel' do
-      params = { 'api_id' => 'test', 'socket_id' => '123456', 'signature' => 'md5' , 'timestamp' => 123 }
-      @auth.env.stub(:params) { params }
-      @auth.validate_connection_params
-      @auth.connection_string.should eq 'test:123456:123'
     end
   end
 end

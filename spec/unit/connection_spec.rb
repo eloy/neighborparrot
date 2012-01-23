@@ -59,6 +59,7 @@ describe Neighborparrot::Connection do
     it 'should create a new queue and configure to send to the client when receibe data' do
       msg = 'test msg'
       EM.run do
+        @c.env.stub(:params) { {} } # EM Crazy errors
         @c.stub(:send_to_client) do |rec|
           rec.should eq msg
           schedule_em_stop
