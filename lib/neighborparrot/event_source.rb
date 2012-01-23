@@ -1,4 +1,3 @@
-require 'pp'
 class EventSourceEndPoint < Goliath::API
   include Neighborparrot::Connection
   include Neighborparrot::Auth
@@ -10,19 +9,19 @@ class EventSourceEndPoint < Goliath::API
     'Cache-Control' => 'no-cache',
     'Connection' => 'keep-alive',
     'Transfer-Encoding' => 'chunked',
-    'X-Stream' => 'Neighborparrot',
-    'Server' => 'Neighborparrot'
+    'X-STREAM' => 'Neighborparrot',
+    'SERVER' => 'Neighborparrot'
   }
 
 
-  # on close action
-  def on_close(env)
-    begin
-      env['np_connection'].on_close if env['np_connection']
-    rescue
-      env.logger.error $!
-    end
-  end
+  # # on close action
+  # def on_close(env)
+  #   begin
+  #     env['np_connection'].on_close if env['np_connection']
+  #   rescue
+  #     env.logger.error $!
+  #   end
+  # end
 
   # Prepare the event source connection
   def response(env)
@@ -30,7 +29,7 @@ class EventSourceEndPoint < Goliath::API
     validate_connection_params # Ensure required parameters
 
     EM.next_tick do
-      auth_connection_request do |app|
+      auth_request do |app|
        prepare_connection env
       end
     end

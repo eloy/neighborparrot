@@ -34,7 +34,7 @@ module Neighborparrot
 
     def send_to_client(msg)
       @env.trace 'sending_chunk'
-      # @env.logger.debug "Send message msg to connection X in channel #{@channel}"
+      @env.logger.debug "Send message #{msg} to connection X in channel #{@channel}"
       @env.chunked_stream_send msg
     end
 
@@ -58,14 +58,16 @@ module Neighborparrot
       @env.chunked_stream_close
     end
 
-    def on_close
-      @env.logger.debug "unsubscribe custome from channel #{@channel}"
+    # Called when close connection
+    def on_close(env)
+      @env.logger.debug "unsubscribe customer from channel #{@channel}"
       @broker.consumer_channel.unsubscribe(@subscription_id)
     end
 
     # Handle send request
     def prepare_send_request(env)
       env.trace 'prepare send request'
+      env.logger.debug "Prepare to send messate to channel #{@channel}"
       unless env.params['event_id']
         env.params['event_id'] = generate_message_id
       end
@@ -76,14 +78,14 @@ module Neighborparrot
     # Send the message to the broker for
     # broadcast to other clients
     def send_to_broker(request)
-      # env.logger.debug "Sent message to channel #{request[:channel]}"
+      env.logger.debug "Sent message to broker channel #{request['channel']}"
       env.trace 'sending to broker'
       # Send messages to broker is a slow task
       EM.next_tick do
         message = pack_message_event(request)
-        @application.send_message_to_channel request[:channel], message
+        @application.send_message_to_channel request['channel'], message
+        env.trace 'sended to broker'
       end
-      env.trace 'sended to broker'
     end
 
     # Queue for input messages
@@ -108,7 +110,7 @@ module Neighborparrot
 
     # Prepare a message as data message
     def pack_message_event(request)
-      return "id:#{request[:event_id]}\ndata:#{request[:data]}\n\n"
+      return "id:#{request['event_id']}\ndata:#{request['data']}\n\n"
     end
 
     # All incoming request are pushed to this queue

@@ -5,18 +5,15 @@ module Neighborparrot
   # store persistent data like max connections and in mongodb
   class Application
 
-    attr_reader :api_id, :api_key
+    attr_accessor :api_id
 
     # Global application Hash.
     # Contains all the application instances indexed by api_id
     @@applications = Hash.new
 
     # Initializer, setup app_info values
-    def initialize(env, app_info)
-      @env = env
-      @app_info = app_info
-      @api_id = @app_info['api_id']
-      @api_key = @app_info['api_key']
+    def initialize(api_id)
+      @api_id = api_id
       @brokers = {}
     end
 
@@ -26,15 +23,9 @@ module Neighborparrot
     # @param [String] api_id
     # @return [Application] application
     def self.get_application(api_id)
-      @@applications[api_id]
-    end
-
-    # Create a new application with desired app_info
-    def self.generate(env, app_info)
-      return false unless app_info
-      app = Application.new(env, app_info)
-      @@applications[app.api_id] = app
-      app
+      app = @@applications[api_id]
+      return app unless app.nil?
+      @@applications[api_id] = Application.new(api_id)
     end
 
     # Get or create a channel
@@ -55,7 +46,7 @@ module Neighborparrot
     # Return a ChannelBroker
     def create_broker(channel)
       # return TestChannelBroker.new() if channel == "test-channel"
-      if @env.config['use_rabbit'] == true
+      if false
         broker = AMQPChannelBroker.new(channel)
         broker.start
       else

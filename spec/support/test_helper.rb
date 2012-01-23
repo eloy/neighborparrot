@@ -13,8 +13,9 @@ module Goliath
     def aget_request(request_data = {}, errback = nil, &blk)
       req = test_request(request_data).aget(request_data)
       req.stream &blk
-      # req.errback &errback if errback
+      req.errback &errback if errback
       # req.errback { stop }
+      return req
     end
 
     # Make a POST request the currently launched API.
@@ -24,13 +25,13 @@ module Goliath
     # @param blk [Proc] The callback block to execute
     def apost_request(request_data = {}, errback = nil, &blk)
       req = test_request(request_data).apost(request_data)
+      req.errback &errback if errback
+      return req
     end
   end
 end
 
 include Neighborparrot::Auth
-
-
 
 def schedule_em_stop
   EM.next_tick { EM.stop }

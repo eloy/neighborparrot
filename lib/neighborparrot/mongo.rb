@@ -27,10 +27,9 @@ module Neighborparrot
     def attach_errback(response)
       response.errback do |err|
         env.logger.info "Error!! #{err}"
-        raise Goliath::Validation::BadRequestError.new("invalid signature")
+        raise Goliath::Validation::BadRequestError.new("invalid application")
       end
       return response
     end
-
   end
 end

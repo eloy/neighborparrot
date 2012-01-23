@@ -120,6 +120,7 @@ describe Neighborparrot::Connection do
       @env = Goliath::Env.new
       @params = {}
       @env.stub(:params) { @params }
+      @env.stub(:logger) { double('logger').as_null_object }
     end
 
     it 'should add event id if not present' do
@@ -157,10 +158,10 @@ describe Neighborparrot::Connection do
     it 'should send a packed message to the application' do
       EM.run do
         msg = 'test message'
-        event = { :channel => 'test', :data => 'test sting', :event_id => 1 }
+        event = { 'channel' => 'test', 'data' => 'test sting', 'event_id' => 1 }
         packed_msg = @c.pack_message_event event
         @c.application.stub(:send_message_to_channel) do |channel, msg|
-          channel.should eq event[:channel]
+          channel.should eq event['channel']
           msg.should eq packed_msg
           schedule_em_stop
         end
