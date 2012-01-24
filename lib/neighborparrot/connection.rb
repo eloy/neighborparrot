@@ -60,8 +60,8 @@ module Neighborparrot
 
     # Called when close connection
     def on_close(env)
-      @env.logger.debug "unsubscribe customer from channel #{@channel}"
-      @broker.consumer_channel.unsubscribe(@subscription_id)
+      env.logger.debug "unsubscribe customer from channel #{@channel}"
+      @broker.consumer_channel.unsubscribe(@subscription_id) if @broker
     end
 
     # Handle send request

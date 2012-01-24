@@ -1,4 +1,6 @@
 require 'hmac-sha2'
+require 'signature'
+
 module Neighborparrot
   module Auth
     include Neighborparrot::Mongo
@@ -47,10 +49,18 @@ module Neighborparrot
       @application = Neighborparrot::Application.get_application @api_id
       mongo_req = mongo_first('app_info', :api_id => @api_id)
       mongo_req.callback do |app_info|
-        raise Goliath::Validation::BadRequestError.new("invalid application #{@api_id}") unless app_info
-        raise Goliath::Validation::BadRequestError.new("invalid signature") unless valid_signature? app_info
-        blk.call @application
+        if app_info && valid_signature?(app_info)
+          blk.call @application
+        else
+          env.logger.debug "Obtained app_info #{app_info} #{env}"
+          login_failed
+        end
       end
+    end
+
+    def login_failed
+      env.chunked_stream_send "Login failed"
+      env.chunked_stream_close
     end
   end
 end
