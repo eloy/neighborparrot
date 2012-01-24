@@ -1,5 +1,6 @@
 <html>
 <head>
+  <title>Web Socket service</title>
   <META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE">
   <% if @use_polyfill %>
     <script type="text/javascript" src="<%= @assets_url %>/js/websocket.js"></script>
@@ -9,7 +10,7 @@
 <body>
 :-)
 <script>
-  broker = new WSBroker("<%= @server_url %>");
+  broker = new Broker("<%= @server_url %>");
   setTimeout(function() { broker.open(); }, 0);
 </script>
 </body>

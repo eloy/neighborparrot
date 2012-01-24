@@ -1,23 +1,23 @@
 # NeighborParrot client
 #
 class window.Parrot
-  @brokerHost = "https://neighborparrot.net"
-  @debug = false
+#  @brokerHost = "https://neighborparrot.net"
+  @brokerHost = "http://127.0.0.1:9000"
+  @debug = true
 
   # Parrot constructot
   # @param [String] channel name
   # @param [Function] onmessage: callback called when receive a message
   # @param [Function] onconnect: callback called when connection success
   # @param [Function] onerror: callback called on error
-  constructor: (channel, onmessage = null, onerror = null, onconnect = null) ->
-    @log "Creating a parrot with channel: #{channel}"
-    @channel = channel
-    @onmessage = onmessage
-    @onconnect = onconnect
-    @onerror = onerror
-    @createIFrame()
+  constructor: (params) ->
+    @params = params
+    @channel = @params['channel']
+    @log "Creating a parrot with channel: #{@channel}"
+    @createIFrame(@params['service'])
     @addMessageListener()
 
+  # Let the window listen messages from the iframe
   addMessageListener: ->
     _this = @
     bounder = (e) -> _this.dispatch.call _this, e
@@ -26,6 +26,11 @@ class window.Parrot
     else
       window.attachEvent 'onmessage', bounder
     # TODO: if Postmessage is not supported??
+
+  # Post message to the iframe window
+  post: (data) ->
+    frame = window.document.getElementById('parrot-iframe')
+    frame.contentWindow.postMessage data, Parrot.brokerHost
 
   # Convenient function for logging
   log: (msg) ->
@@ -55,19 +60,27 @@ class window.Parrot
     else if msg.match("^error:") && @onerror
       @onerror(msg.substring(6))
       @log "Calling onerror callout"
+    else if msg.match("^iframeReady:")
+      @onIFrameReady()
+      @log "IFrame ready"
     else
       @error "ERROR: Invalid message"
 
   # Create the IFrame for cross domain post message
-  createIFrame: ->
+  createIFrame: (service) ->
     @log "Creating IFrame it not present"
     if $("iframe#parrot-iframe").length == 0
-      url_params = "?channel=#{@channel}&parent_url=#{@getUrl()}"
+      url_params = "?parent_url=#{@getUrl()}"
+      url_params += "&service=#{service}"
       url_params += "&use_polyfill=true" unless window['EventSource'] # Add polyfill if needed
       src = "#{Parrot.brokerHost}/#{url_params}"
-      iframe = $('<iframe>', { id: 'parrot-iframe', src: src})
-      iframe.hide().appendTo('body')
+      @iframe = $('<iframe>', { id: 'parrot-iframe', src: src})
+      @iframe.hide().appendTo('body')
       @log "Created IFrame"
+
+  onIFrameReady: ->
+    console.log "IFrame preparado"
+    @post {action: 'connect', params: @params}
 
   # Return current url for message origin authentication
   getUrl: ->

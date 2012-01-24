@@ -14,6 +14,18 @@ class window.Broker
   constructor: ->
     @channel = window.getParam('channel')
     @parent_url = window.getParam('parent_url')
+    @addMessageListener()
+    @post("iframeReady:")
+
+ # Let the window listen messages from the iframe
+  addMessageListener: ->
+    _this = @
+    bounder = (e) -> _this.dispatch.call _this, e
+    if window['addEventListener']
+      window.addEventListener 'message', bounder
+    else
+      window.attachEvent 'onmessage', bounder
+    # TODO: if Postmessage is not supported??
 
   # Post message to the parent window
   post: (data) ->
@@ -34,9 +46,9 @@ class window.Broker
 
   # open connection and add event listeners
   # Called from index.html in the broker server
-  open: ->
+  open: (params)->
     _this = @
-    es = new EventSource("/open?channel=#{@channel}");
+    es = new EventSource(@toQuery('/open', params))
     es.addEventListener('open', (e) ->
       _this.onEventSourceOpen.call _this, e
     , false)
@@ -46,5 +58,17 @@ class window.Broker
     es.addEventListener('error', (e) ->
       _this.onEventSourceError.call _this, e
     , false)
+
+  # Dispatch messages from the main window
+  dispatch: (event) ->
+    if event.data.action == 'connect'
+      @open event.data.params
+
+  toQuery: (path, params) ->
+    console.log params
+    query = "#{path}?"
+    for key,value of params
+      query += "&#{key}=#{value}"
+    query
 
 @app = window.app ? {}

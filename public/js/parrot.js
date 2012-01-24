@@ -1,20 +1,15 @@
 
   window.Parrot = (function() {
 
-    Parrot.brokerHost = "https://neighborparrot.net";
+    Parrot.brokerHost = "http://127.0.0.1:9000";
 
-    Parrot.debug = false;
+    Parrot.debug = true;
 
-    function Parrot(channel, onmessage, onerror, onconnect) {
-      if (onmessage == null) onmessage = null;
-      if (onerror == null) onerror = null;
-      if (onconnect == null) onconnect = null;
-      this.log("Creating a parrot with channel: " + channel);
-      this.channel = channel;
-      this.onmessage = onmessage;
-      this.onconnect = onconnect;
-      this.onerror = onerror;
-      this.createIFrame();
+    function Parrot(params) {
+      this.params = params;
+      this.channel = this.params['channel'];
+      this.log("Creating a parrot with channel: " + this.channel);
+      this.createIFrame(this.params['service']);
       this.addMessageListener();
     }
 
@@ -29,6 +24,12 @@
       } else {
         return window.attachEvent('onmessage', bounder);
       }
+    };
+
+    Parrot.prototype.post = function(data) {
+      var frame;
+      frame = window.document.getElementById('parrot-iframe');
+      return frame.contentWindow.postMessage(data, Parrot.brokerHost);
     };
 
     Parrot.prototype.log = function(msg) {
@@ -64,25 +65,37 @@
       } else if (msg.match("^error:") && this.onerror) {
         this.onerror(msg.substring(6));
         return this.log("Calling onerror callout");
+      } else if (msg.match("^iframeReady:")) {
+        this.onIFrameReady();
+        return this.log("IFrame ready");
       } else {
         return this.error("ERROR: Invalid message");
       }
     };
 
-    Parrot.prototype.createIFrame = function() {
-      var iframe, src, url_params;
+    Parrot.prototype.createIFrame = function(service) {
+      var src, url_params;
       this.log("Creating IFrame it not present");
       if ($("iframe#parrot-iframe").length === 0) {
-        url_params = "?channel=" + this.channel + "&parent_url=" + (this.getUrl());
+        url_params = "?parent_url=" + (this.getUrl());
+        url_params += "&service=" + service;
         if (!window['EventSource']) url_params += "&use_polyfill=true";
         src = "" + Parrot.brokerHost + "/" + url_params;
-        iframe = $('<iframe>', {
+        this.iframe = $('<iframe>', {
           id: 'parrot-iframe',
           src: src
         });
-        iframe.hide().appendTo('body');
+        this.iframe.hide().appendTo('body');
         return this.log("Created IFrame");
       }
+    };
+
+    Parrot.prototype.onIFrameReady = function() {
+      console.log("IFrame preparado");
+      return this.post({
+        action: 'connect',
+        params: this.params
+      });
     };
 
     Parrot.prototype.getUrl = function() {
