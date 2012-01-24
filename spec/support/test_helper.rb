@@ -13,7 +13,7 @@ module Goliath
     def aget_request(request_data = {}, errback = nil, &blk)
       req = test_request(request_data).aget(request_data)
       req.stream &blk
-      req.errback &errback if errback
+      # req.errback &errback if errback
       # req.errback { stop }
       return req
     end

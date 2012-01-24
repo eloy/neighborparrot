@@ -17,10 +17,18 @@ require 'em-eventsource'
 # in ./support/ and its subdirectories.
 Dir["#{File.dirname(__FILE__)}/support/**/*.rb"].each {|f| require f}
 
-Goliath.env = :test
+Neighborparrot.stub(:env) { :test }
 
 RSpec.configure do |c|
   c.include Goliath::TestHelper, :example_group => {
     :file_path => /spec\/integration/
   }
+
+  # Need cleanup mongo database
+  c.after do
+    EM.synchrony do
+      ['app_info'].each { |collection|  mongo_db.collection(collection).remove }
+      EM.stop
+    end
+  end
 end
