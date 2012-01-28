@@ -22,6 +22,7 @@ class SendRequestEndPoint < Goliath::API
   # Prepare the event source connection
   def response(env)
     env.trace 'open send connection'
+    env.logger.debug "Begin send request"
     validate_send_params # Ensure required parameters
 
     EM.next_tick do
