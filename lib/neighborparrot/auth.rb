@@ -2,6 +2,12 @@ require 'hmac-sha2'
 require 'signature'
 
 module Neighborparrot
+  class AuthError < Goliath::Validation::BadRequestError
+    def initialize(env,msg)
+      super(msg)
+      env.logger.debug "Error #{msg}"
+    end
+  end
   module Auth
     include Neighborparrot::Mongo
 
@@ -26,9 +32,9 @@ module Neighborparrot
     def validate_connection_params
       @api_id = env.params['auth_key']
       @socket_id = env.params['socket_id']
-      raise Goliath::Validation::BadRequestError.new("api_id is mandatory") if @api_id.nil?
-      raise Goliath::Validation::BadRequestError.new("socket_id is mandatory") if @socket_id.nil?
-      raise Goliath::Validation::BadRequestError.new("no signature") unless env.params['auth_signature']
+      raise AuthError.new(env, "api_id is mandatory") if @api_id.nil?
+      raise AuthError.new(env, "socket_id is mandatory") if @socket_id.nil?
+      raise AuthError.new(env, "no signature") unless env.params['auth_signature']
     end
 
     # Ensure valid send params and
@@ -37,9 +43,9 @@ module Neighborparrot
     def validate_send_params
       @api_id = env.params['auth_key']
       @data = env.params['data']
-      raise Goliath::Validation::BadRequestError.new("api_id is mandatory") if @api_id.nil?
-      raise Goliath::Validation::BadRequestError.new("data is mandatory") if @data.nil?
-      raise Goliath::Validation::BadRequestError.new("no signature") unless env.params['auth_signature']
+      raise AuthError.new(env, "api_id is mandatory") if @api_id.nil?
+      raise AuthError.new(env, "data is mandatory") if @data.nil?
+      raise AuthError.new(env, "no signature") unless env.params['auth_signature']
     end
 
     # Check authorization
@@ -52,7 +58,7 @@ module Neighborparrot
         if app_info && valid_signature?(app_info)
           blk.call @application
         else
-          env.logger.debug "Obtained app_info #{app_info} #{env}"
+          env.logger.debug "Bad login. Obtained app_info #{app_info} #{env}"
           login_failed
         end
       end
