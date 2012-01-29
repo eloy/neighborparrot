@@ -7,6 +7,7 @@ module Rack
      def can_serve(path)
        return false if path == "/"
        return true if path.index('/js') == 0
+       return true if path.index('/pf') == 0
        return true if path.index('/tests') == 0
      end
    end
@@ -30,6 +31,7 @@ class Router < Goliath::API
 
   get '/'        ,StaticIndexEndPoint
   map '/open'    ,EventSourceEndPoint
-  post '/send'    ,SendRequestEndPoint
+  post '/send'   ,SendRequestEndPoint
+  map '/ws'      ,WebSocketEndPoint
 
 end

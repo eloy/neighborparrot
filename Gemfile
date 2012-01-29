@@ -22,7 +22,9 @@ group :test do
   gem 'yajl-ruby'
 end
 
+
 gem 'goliath', :git => 'https://github.com/postrank-labs/goliath.git'
+#gem 'goliath', :git => '../goliath/'
 gem 'rack'
 gem 'rack-multipart_related'
 gem 'em-websocket'
@@ -32,3 +34,8 @@ gem 'ruby-hmac'
 gem 'signature'
 gem 'uuidtools'
 gem 'amqp'
+
+# Assets
+gem 'coffee-script'
+gem 'uglifier'
+

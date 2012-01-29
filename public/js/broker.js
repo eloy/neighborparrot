@@ -9,19 +9,28 @@
 
   window.Broker = (function() {
 
-    function Broker() {
+    function Broker(service, server) {
+      if (server == null) server = nil;
+      this.service = service;
+      this.server = server;
       this.channel = window.getParam('channel');
       this.parent_url = window.getParam('parent_url');
-      this.addMessageListener();
+      this.addMessageListener(this.service);
       this.post("iframeReady:");
     }
 
-    Broker.prototype.addMessageListener = function() {
+    Broker.prototype.addMessageListener = function(service) {
       var bounder, _this;
       _this = this;
-      bounder = function(e) {
-        return _this.dispatch.call(_this, e);
-      };
+      if (service === 'es') {
+        bounder = function(e) {
+          return _this.dispatchEventSource.call(_this, e);
+        };
+      } else {
+        bounder = function(e) {
+          return _this.dispatchWebSocket.call(_this, e);
+        };
+      }
       if (window['addEventListener']) {
         return window.addEventListener('message', bounder);
       } else {
@@ -35,35 +44,59 @@
       return parent.postMessage(data, target_url);
     };
 
-    Broker.prototype.onEventSourceOpen = function(event) {
+    Broker.prototype.on_open = function(event) {
       return this.post('open:');
     };
 
-    Broker.prototype.onEventSourceError = function(event) {
+    Broker.prototype.on_error = function(event) {
       return this.post("error:" + event.data);
     };
 
-    Broker.prototype.onEventSourceMessage = function(event) {
+    Broker.prototype.on_message = function(event) {
       return this.post("data:" + event.data);
     };
 
-    Broker.prototype.open = function(params) {
+    Broker.prototype.openEventSource = function(params) {
       var es, _this;
       _this = this;
       es = new EventSource(this.toQuery('/open', params));
       es.addEventListener('open', function(e) {
-        return _this.onEventSourceOpen.call(_this, e);
+        return _this.on_open.call(_this, e);
       }, false);
       es.addEventListener('message', function(e) {
-        return _this.onEventSourceMessage.call(_this, e);
+        return _this.on_message.call(_this, e);
       }, false);
       return es.addEventListener('error', function(e) {
-        return _this.onEventSourceError.call(_this, e);
+        return _this.on_error.call(_this, e);
       }, false);
     };
 
-    Broker.prototype.dispatch = function(event) {
-      if (event.data.action === 'connect') return this.open(event.data.params);
+    Broker.prototype.openWebSocket = function(params) {
+      var es, url, _this;
+      _this = this;
+      url = "" + this.server + "/" + (this.toQuery('ws', params));
+      es = new WebSocket(url);
+      es.addEventListener('open', function(e) {
+        return _this.on_open.call(_this, e);
+      }, false);
+      es.addEventListener('message', function(e) {
+        return _this.on_message.call(_this, e);
+      }, false);
+      return es.addEventListener('error', function(e) {
+        return _this.on_error.call(_this, e);
+      }, false);
+    };
+
+    Broker.prototype.dispatchEventSource = function(event) {
+      if (event.data.action === 'connect') {
+        return this.openEventSource(event.data.params);
+      }
+    };
+
+    Broker.prototype.dispatchWebSocket = function(event) {
+      if (event.data.action === 'connect') {
+        return this.openWebSocket(event.data.params);
+      }
     };
 
     Broker.prototype.toQuery = function(path, params) {

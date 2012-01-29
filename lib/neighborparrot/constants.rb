@@ -19,9 +19,11 @@ module Neighborparrot
   ROOT_PATH         = File.expand_path(File.dirname(__FILE__) + '/../../')
   if Neighborparrot::prod?
     SERVER_URL        = "https://neighborparrot.net"
+    WS_SERVER_URL     = "wss://neighborparrot.net"
     ASSETS_URL        = "https://neighborparrot.com"
   else
-    SERVER_URL        = ""
+    SERVER_URL        = "http://127.0.0.1:9000"
+    WS_SERVER_URL     = "ws://127.0.0.1:9000"
     ASSETS_URL        = ""
   end
   SERVICES          = %w(ws es) # WebSockets, EventSource

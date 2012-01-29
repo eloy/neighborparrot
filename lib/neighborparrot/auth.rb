@@ -58,15 +58,10 @@ module Neighborparrot
         if app_info && valid_signature?(app_info)
           blk.call @application
         else
-          env.logger.debug "Bad login. Obtained app_info #{app_info} #{env}"
+          env.logger.debug "Bad login. Obtained app_info #{app_info} #{env.params}"
           login_failed
         end
       end
-    end
-
-    def login_failed
-      env.chunked_stream_send "Login failed"
-      env.chunked_stream_close
     end
   end
 end

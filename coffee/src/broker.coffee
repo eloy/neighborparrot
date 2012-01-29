@@ -11,16 +11,22 @@ window['getParam'] = (name) ->
 class window.Broker
   # Broker constructor
   # Get channel and parent url from the parameters
-  constructor: ->
+  constructor: (service, server=nil) ->
+    @service = service
+    @server = server
     @channel = window.getParam('channel')
     @parent_url = window.getParam('parent_url')
-    @addMessageListener()
+    @addMessageListener(@service)
     @post("iframeReady:")
 
  # Let the window listen messages from the iframe
-  addMessageListener: ->
+  addMessageListener: (service) ->
     _this = @
-    bounder = (e) -> _this.dispatch.call _this, e
+    if service == 'es'
+      bounder = (e) -> _this.dispatchEventSource.call _this, e
+    else
+      bounder = (e) -> _this.dispatchWebSocket.call _this, e
+
     if window['addEventListener']
       window.addEventListener 'message', bounder
     else
@@ -33,36 +39,58 @@ class window.Broker
     parent.postMessage data, target_url
 
   # On connection open send a control event to the parrot
-  onEventSourceOpen: (event) ->
+  on_open: (event) ->
     @post('open:')
 
   # On connection error send a control event to the parrot
-  onEventSourceError:  (event) ->
+  on_error:  (event) ->
     @post("error:#{event.data}")
 
   # On message post to the parent window
-  onEventSourceMessage: (event) ->
+  on_message: (event) ->
     @post("data:#{event.data}")
 
   # open connection and add event listeners
   # Called from index.html in the broker server
-  open: (params)->
+  openEventSource: (params)->
     _this = @
     es = new EventSource(@toQuery('/open', params))
     es.addEventListener('open', (e) ->
-      _this.onEventSourceOpen.call _this, e
+      _this.on_open.call _this, e
     , false)
     es.addEventListener('message', (e) ->
-      _this.onEventSourceMessage.call _this, e
+      _this.on_message.call _this, e
     , false)
     es.addEventListener('error', (e) ->
-      _this.onEventSourceError.call _this, e
+      _this.on_error.call _this, e
+    , false)
+
+  # open connection and add event listeners
+  # Called from index.html in the broker server
+  openWebSocket: (params)->
+    _this = @
+    url = "#{@server}/#{@toQuery('ws', params)}"
+    es = new WebSocket(url)
+    es.addEventListener('open', (e) ->
+      _this.on_open.call _this, e
+    , false)
+    es.addEventListener('message', (e) ->
+      _this.on_message.call _this, e
+    , false)
+    es.addEventListener('error', (e) ->
+      _this.on_error.call _this, e
     , false)
 
   # Dispatch messages from the main window
-  dispatch: (event) ->
+  dispatchEventSource: (event) ->
     if event.data.action == 'connect'
-      @open event.data.params
+      @openEventSource event.data.params
+
+ # Dispatch messages from the main window
+  dispatchWebSocket: (event) ->
+    if event.data.action == 'connect'
+      @openWebSocket event.data.params
+
 
   toQuery: (path, params) ->
     console.log params

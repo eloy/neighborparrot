@@ -1,3 +1,4 @@
+(function() {
 
   window.Parrot = (function() {
 
@@ -114,3 +115,5 @@
     return Parrot;
 
   })();
+
+}).call(this);
