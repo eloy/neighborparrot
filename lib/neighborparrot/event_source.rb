@@ -33,11 +33,12 @@ class EventSourceEndPoint < Goliath::API
   end
 
   def close_endpoint
-    @keep_alive_timer.cancel
+    @keep_alive_timer.cancel if @keep_alive_timer
   end
 
   # Prepare the event source connection
   def response(env)
+    @env = env
     env.trace 'open connection'
     validate_connection_params # Ensure required parameters
 
