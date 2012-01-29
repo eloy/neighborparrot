@@ -14,9 +14,7 @@ module Neighborparrot
       @channel = env.params['channel']
       @env.logger.debug "Connected to channel #{@channel}"
       init_queue
-
-      @queue.push ": " << Array.new(2048, " ").join << "\n\n" if @service == 'es' # Init stream
-      # keep_alive_timer # Not neede??
+      initialize_connection # Defined in each endpoint
       subscribe
     end
 
@@ -33,12 +31,6 @@ module Neighborparrot
       @queue.pop(&processor)
     end
 
-    def keep_alive_timer
-      @timer = EventMachine::PeriodicTimer.new(Neighborparrot::KEEP_ALIVE_TIMER) do
-        @queue.push ':\n\n' # Empty event stream
-      end
-    end
-
     # Subscribe to desired channel
     def subscribe
       @env.trace 'subscribing'
@@ -53,6 +45,7 @@ module Neighborparrot
     def on_close(env)
       env.logger.debug "unsubscribe customer from channel #{@channel}"
       @broker.consumer_channel.unsubscribe(@subscription_id) if @broker
+      close_endpoint
     end
 
     # Handle send request

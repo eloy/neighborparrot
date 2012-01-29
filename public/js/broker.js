@@ -72,17 +72,17 @@
     };
 
     Broker.prototype.openWebSocket = function(params) {
-      var es, url, _this;
+      var url, _this;
       _this = this;
       url = "" + this.server + "/" + (this.toQuery('ws', params));
-      es = new WebSocket(url);
-      es.addEventListener('open', function(e) {
+      this.ws = new WebSocket(url);
+      this.ws.addEventListener('open', function(e) {
         return _this.on_open.call(_this, e);
       }, false);
-      es.addEventListener('message', function(e) {
+      this.ws.addEventListener('message', function(e) {
         return _this.on_message.call(_this, e);
       }, false);
-      return es.addEventListener('error', function(e) {
+      return this.ws.addEventListener('error', function(e) {
         return _this.on_error.call(_this, e);
       }, false);
     };
@@ -94,9 +94,8 @@
     };
 
     Broker.prototype.dispatchWebSocket = function(event) {
-      if (event.data.action === 'connect') {
-        return this.openWebSocket(event.data.params);
-      }
+      if (event.data.action === 'connect') this.openWebSocket(event.data.params);
+      if (event.data.action === 'send') return this.ws.send(event.data.data);
     };
 
     Broker.prototype.toQuery = function(path, params) {

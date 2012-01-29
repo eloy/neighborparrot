@@ -12,9 +12,10 @@ class window.Parrot
   # @param [Function] onerror: callback called on error
   constructor: (params) ->
     @params = params
+    @service = @params['service']
     @channel = @params['channel']
     @log "Creating a parrot with channel: #{@channel}"
-    @createIFrame(@params['service'])
+    @createIFrame()
     @addMessageListener()
 
   # Let the window listen messages from the iframe
@@ -67,12 +68,16 @@ class window.Parrot
       @error "ERROR: Invalid message"
 
   # Create the IFrame for cross domain post message
-  createIFrame: (service) ->
+  createIFrame: ->
     @log "Creating IFrame it not present"
     if $("iframe#parrot-iframe").length == 0
       url_params = "?parent_url=#{@getUrl()}"
-      url_params += "&service=#{service}"
-      url_params += "&use_polyfill=true" unless window['EventSource'] # Add polyfill if needed
+      url_params += "&service=#{@service}"
+      # Add polyfill if needed
+      if @service == 'es'
+        url_params += "&use_polyfill=true" unless window['EventSource']
+      else
+        url_params += "&use_polyfill=true" unless window['WebSocket']
       src = "#{Parrot.brokerHost}/#{url_params}"
       @iframe = $('<iframe>', { id: 'parrot-iframe', src: src})
       @iframe.hide().appendTo('body')
@@ -81,6 +86,9 @@ class window.Parrot
   onIFrameReady: ->
     console.log "IFrame preparado"
     @post {action: 'connect', params: @params}
+
+  send: (message) ->
+    @post {action: 'send', data: message}
 
   # Return current url for message origin authentication
   getUrl: ->

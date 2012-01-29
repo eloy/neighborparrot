@@ -8,9 +8,10 @@
 
     function Parrot(params) {
       this.params = params;
+      this.service = this.params['service'];
       this.channel = this.params['channel'];
       this.log("Creating a parrot with channel: " + this.channel);
-      this.createIFrame(this.params['service']);
+      this.createIFrame();
       this.addMessageListener();
     }
 
@@ -74,13 +75,17 @@
       }
     };
 
-    Parrot.prototype.createIFrame = function(service) {
+    Parrot.prototype.createIFrame = function() {
       var src, url_params;
       this.log("Creating IFrame it not present");
       if ($("iframe#parrot-iframe").length === 0) {
         url_params = "?parent_url=" + (this.getUrl());
-        url_params += "&service=" + service;
-        if (!window['EventSource']) url_params += "&use_polyfill=true";
+        url_params += "&service=" + this.service;
+        if (this.service === 'es') {
+          if (!window['EventSource']) url_params += "&use_polyfill=true";
+        } else {
+          if (!window['WebSocket']) url_params += "&use_polyfill=true";
+        }
         src = "" + Parrot.brokerHost + "/" + url_params;
         this.iframe = $('<iframe>', {
           id: 'parrot-iframe',
@@ -96,6 +101,13 @@
       return this.post({
         action: 'connect',
         params: this.params
+      });
+    };
+
+    Parrot.prototype.send = function(message) {
+      return this.post({
+        action: 'send',
+        data: message
       });
     };
 

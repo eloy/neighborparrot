@@ -70,14 +70,14 @@ class window.Broker
   openWebSocket: (params)->
     _this = @
     url = "#{@server}/#{@toQuery('ws', params)}"
-    es = new WebSocket(url)
-    es.addEventListener('open', (e) ->
+    @ws = new WebSocket(url)
+    @ws.addEventListener('open', (e) ->
       _this.on_open.call _this, e
     , false)
-    es.addEventListener('message', (e) ->
+    @ws.addEventListener('message', (e) ->
       _this.on_message.call _this, e
     , false)
-    es.addEventListener('error', (e) ->
+    @ws.addEventListener('error', (e) ->
       _this.on_error.call _this, e
     , false)
 
@@ -90,7 +90,8 @@ class window.Broker
   dispatchWebSocket: (event) ->
     if event.data.action == 'connect'
       @openWebSocket event.data.params
-
+    if event.data.action == 'send'
+      @ws.send event.data.data
 
   toQuery: (path, params) ->
     console.log params

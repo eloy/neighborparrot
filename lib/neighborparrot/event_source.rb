@@ -15,14 +15,25 @@ class EventSourceEndPoint < Goliath::API
 
   # Actions taken if login failed
   def login_failed
-    env.chunked_stream_send "Login failed"
-    env.chunked_stream_close
+    @env.chunked_stream_send "Login failed"
+    @env.chunked_stream_close
   end
 
   def send_to_client(msg)
-    env.trace 'sending_chunk'
+    @env.trace 'sending_chunk'
     # @env.logger.debug "Send message #{msg} to connection X in channel #{@channel}"
-    env.chunked_stream_send msg
+    @env.chunked_stream_send msg
+  end
+
+  def initialize_connection
+    @env.chunked_stream_send ": " << Array.new(2048, " ").join << "\n\n"
+    @keep_alive_timer = EventMachine::PeriodicTimer.new(Neighborparrot::KEEP_ALIVE_TIMER) do
+      @env.chunked_stream_send ':\n\n' # Empty event stream
+    end
+  end
+
+  def close_endpoint
+    @keep_alive_timer.cancel
   end
 
   # Prepare the event source connection

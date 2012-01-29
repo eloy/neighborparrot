@@ -20,16 +20,22 @@ class WebSocketEndPoint < Goliath::WebSocket
     end
   end
 
-  def send_to_client(msg)
-    env.trace 'sending_chunk'
-    # @env.logger.debug "Send message #{msg} to connection X in channel #{@channel}"
-    env.stream_send msg
+  # WebSockets don't need extra initialization
+  def initialize_connection
   end
 
+  def close_endpoint
+  end
 
-  def on_message(env, msg)
-    env.logger.info("WS MESSAGE: #{msg}")
-    env.channel << msg
+  def send_to_client(msg)
+    @env.trace 'sending_chunk'
+    # @env.logger.debug "Send message #{msg} to connection X in channel #{@channel}"
+    @env.stream_send msg
+  end
+
+  def on_message(env, message)
+    env.logger.info("WS MESSAGE: #{message}")
+    @application.send_message_to_channel @channel, message
   end
 
   def on_error(env, error)
