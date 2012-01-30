@@ -32,7 +32,6 @@ class StaticIndexEndPoint < Goliath::API
     @template_env.use_polyfill = @use_polyfill
   end
 
-
   # Read the templete from disk and parseit
   def parse_template
     file = @service == 'es' ? Neighborparrot::ES_INDEX : Neighborparrot::WS_INDEX

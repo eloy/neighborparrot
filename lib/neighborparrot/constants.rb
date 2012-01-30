@@ -30,7 +30,4 @@ module Neighborparrot
   WS_INDEX          = "#{ROOT_PATH}/templates/web_sockets.html.erb"
   ES_INDEX          = "#{ROOT_PATH}/templates/event_source.html.erb"
   KEEP_ALIVE_TIMER  = 10
-
-
-
 end

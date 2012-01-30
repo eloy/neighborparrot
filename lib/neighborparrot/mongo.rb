@@ -20,9 +20,14 @@ module Neighborparrot
       return @@db
     end
 
+    # Return first matched record
     def mongo_first(collection, query)
       resp = mongo_db.collection(collection).first(query)
       attach_errback resp
+    end
+
+    def mongo_increment(collection, api_id, field, increment=1)
+      mongo.db.collection(collection).update({ :api_id => api_id}, {"$addToSet" =>  {field => 0}, "$inc" => { field => increment} } )
     end
 
     private

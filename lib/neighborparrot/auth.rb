@@ -11,9 +11,7 @@ module Neighborparrot
   module Auth
     include Neighborparrot::Mongo
 
-    def generate_socket_id
-      return '12345678'
-    end
+    attr_reader :presence_data
 
     # Return a unix UTC timestamp
     def current_timestamp
@@ -31,9 +29,7 @@ module Neighborparrot
     # and WebSocketEndPoint in response
     def validate_connection_params
       @api_id = env.params['auth_key']
-      @socket_id = env.params['socket_id']
       raise AuthError.new(env, "api_id is mandatory") if @api_id.nil?
-      raise AuthError.new(env, "socket_id is mandatory") if @socket_id.nil?
       raise AuthError.new(env, "no signature") unless env.params['auth_signature']
     end
 

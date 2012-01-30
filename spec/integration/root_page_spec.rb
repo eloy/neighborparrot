@@ -26,8 +26,8 @@ describe 'Root request' do
         request_data = { :path => '/', :query => {:api_id => 'test', :service => 'es'} }
         get_request(request_data, err) do |c|
           c.response.should match ':-\)'
-          c.response.should match 'https://neighborparrot.com/js/broker.js'
-          c.response.should_not match 'https://neighborparrot.com/js/eventsource.js'
+          c.response.should match 'js/broker.js'
+          c.response.should_not match 'pf/eventsource.js'
           stop
         end
       end
@@ -37,7 +37,7 @@ describe 'Root request' do
       with_api(Router) do
         request_data = { :path => '/', :query => {:api_id => 'test', :use_polyfill => 'true', :service => 'es' } }
         get_request(request_data, err) do |c|
-          c.response.should match 'https://neighborparrot.com/js/eventsource.js'
+          c.response.should match 'pf/eventsource.js'
           stop
         end
       end

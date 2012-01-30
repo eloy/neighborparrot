@@ -1,6 +1,7 @@
 module Neighborparrot
   # Subscriber connection representation
   module Connection
+    attr_reader :channel
 
     # Message counter
     @@next_message_id = 1
@@ -35,16 +36,17 @@ module Neighborparrot
     def subscribe
       @env.trace 'subscribing'
       @env.logger.debug "Subscribing the connection to the channel"
-      @broker = @application.get_broker(@channel)
-      @subscription_id = @broker.consumer_channel.subscribe do |msg|
+      @subscription_id = @application.subscribe(self) do |msg|
         @queue.push msg
       end
     end
 
     # Called when close connection
+    # Unsubscribe from current channel and call close_endpoint for
+    # service depenent actions
     def on_close(env)
       env.logger.debug "unsubscribe customer from channel #{@channel}"
-      @broker.consumer_channel.unsubscribe(@subscription_id) if @broker
+      @application.unsubscribe(@channel, @subscription_id) if @application
       close_endpoint
     end
 
