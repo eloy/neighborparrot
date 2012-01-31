@@ -21,3 +21,14 @@ require 'neighborparrot/event_source'
 require 'neighborparrot/web_sockets'
 require 'neighborparrot/send_request'
 require 'neighborparrot/router'
+
+
+module Neighborparrot
+  def self.logger
+    Thread.current[Goliath::Constants::GOLIATH_ENV].logger
+  end
+
+  def logger
+    Neighborparrot.logger
+  end
+end

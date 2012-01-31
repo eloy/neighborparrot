@@ -1,13 +1,13 @@
 module Neighborparrot
   class Channel
     include Neighborparrot::Stats
+    attr_reader :name
 
     def initialize(name, app_info)
       @name = name
       @app_info = app_info
       @connections = Hash.new
       create_broker
-      initialize_stats
     end
 
     # Subscribe to desired channel and perform the block
@@ -26,13 +26,17 @@ module Neighborparrot
 
     def unsubscribe(subscription_id)
       @broker.consumer_channel.unsubscribe(subscription_id)
-      @connections.delete(subscription_id)
+      @connections.delete subscription_id
     end
 
+    # Send the given message to all connections subscribed
     def publish(message)
       @broker.publish message
     end
 
+    def listeners_count
+      @connections.size()
+    end
     # Return a ChannelBroker
     def create_broker
       if false

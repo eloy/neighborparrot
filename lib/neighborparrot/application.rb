@@ -6,7 +6,7 @@ module Neighborparrot
   class Application
     include Neighborparrot::Stats
 
-    attr_accessor :api_id
+    attr_accessor :api_id, :app_info
 
     # Global application Hash.
     # Contains all the application instances indexed by api_id
@@ -15,8 +15,19 @@ module Neighborparrot
     # Initializer, setup app_info values
     def initialize(api_id)
       @api_id = api_id
+      @app_info = nil
       @channels = {}
+      @logger = Neighborparrot.logger
       initialize_stats
+      @logger.debug "Created application"
+    end
+
+    # Remove application
+    # stop timers, flush stats and remove from current_applications
+    def destroy
+      stop_stats
+      @logger.debug "Destroyed application"
+      @@applications.delete @api_id
     end
 
     # Subscribe to desired channel and perform the block
@@ -27,9 +38,27 @@ module Neighborparrot
       channel.subscribe(endpoint, block)
     end
 
+    # Unsubscribe connection from channel
+    # Remove channel if no more users connected
+    # Remove application if no more apps
     def unsubscribe(channel_name, subscription_id)
       channel = @channels[channel_name]
-      channel.unsubscribe(subscription_id) if channel
+      if channel
+        channel.unsubscribe(subscription_id)
+        EM.next_tick { cleanup_after_unsubscribe channel }
+      end
+    end
+
+    # Validations after unsubcribe
+    # Check if is last suscriptor and remove channel
+    # and application if needed
+    def cleanup_after_unsubscribe(channel)
+      return if channel.listeners_count > 0
+      @channels.delete channel.name
+      stat_channel_destroyed channel.name
+      if @channels.size == 0
+        destroy
+      end
     end
 
     # Return the application with desired api_id
@@ -47,9 +76,9 @@ module Neighborparrot
     def get_channel(name)
       channel = @channels[name]
       return channel unless channel.nil?
-      channel = Neighborparrot::Channel.new(name, @app_info)
-      @channels[name] = channel
-      channel
+      # If not exists, create
+      stat_channel_created name # Stats and log
+      @channels[name] = Neighborparrot::Channel.new(name, @app_info)
     end
 
     # Send desired message to channel
@@ -57,6 +86,10 @@ module Neighborparrot
       channel = @channels[channel_name]
       return if channel.nil?
       channel.publish message
+      stat_message_sended channel_name
+      # TODO: Message received should count messages received in other parrot servers
+      # Should be moved to channel
+      stat_message_received channel_name, channel.listeners_count
     end
   end
 end

@@ -52,6 +52,7 @@ module Neighborparrot
       mongo_req = mongo_first('app_info', :api_id => @api_id)
       mongo_req.callback do |app_info|
         if app_info && valid_signature?(app_info)
+          @application.app_info = app_info
           blk.call @application
         else
           env.logger.debug "Bad login. Obtained app_info #{app_info} #{env.params}"

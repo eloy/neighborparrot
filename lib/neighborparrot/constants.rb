@@ -1,4 +1,8 @@
 module Neighborparrot
+  HOSTNAME       = `hostname`.strip
+  ROOT_PATH         = File.expand_path(File.dirname(__FILE__) + '/../../')
+  KEEP_ALIVE_TIMER  = 10 # How send keep alive pings in event source
+  PUSH_STATS_FREC   = 30 # How ofter stats are pushed to server
 
   def self.test?
     Neighborparrot.env == :test
@@ -16,7 +20,6 @@ module Neighborparrot
     Goliath.env rescue ENV['RACK_ENV'] || :development
   end
 
-  ROOT_PATH         = File.expand_path(File.dirname(__FILE__) + '/../../')
   if Neighborparrot::prod?
     SERVER_URL        = "https://neighborparrot.net"
     WS_SERVER_URL     = "wss://neighborparrot.net"
@@ -29,5 +32,4 @@ module Neighborparrot
   SERVICES          = %w(ws es) # WebSockets, EventSource
   WS_INDEX          = "#{ROOT_PATH}/templates/web_sockets.html.erb"
   ES_INDEX          = "#{ROOT_PATH}/templates/event_source.html.erb"
-  KEEP_ALIVE_TIMER  = 10
 end

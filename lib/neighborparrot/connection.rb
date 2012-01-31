@@ -1,21 +1,22 @@
 module Neighborparrot
   # Subscriber connection representation
   module Connection
-    attr_reader :channel
+    attr_reader :channel, :application
 
     # Message counter
     @@next_message_id = 1
 
     # Create a connection
     # Create a queue for the connection
-    # Locate the desired channel and susbcribe thier queue to the channel
+    # Stat the connection for statistics
     def prepare_connection(env)
       env.trace 'init connection'
       @env = env
-      @channel = env.params['channel']
-      @env.logger.debug "Connected to channel #{@channel}"
       init_queue
       initialize_connection # Defined in each endpoint
+      @application.stat_connection_open #
+      @channel = env.params['channel']
+      @env.logger.debug "Connected to channel #{@channel}"
       subscribe
     end
 
@@ -46,7 +47,10 @@ module Neighborparrot
     # service depenent actions
     def on_close(env)
       env.logger.debug "unsubscribe customer from channel #{@channel}"
-      @application.unsubscribe(@channel, @subscription_id) if @application
+      if @application
+        @application.stat_connection_close
+        @application.unsubscribe(@channel, @subscription_id)
+      end
       close_endpoint
     end
 
