@@ -1,6 +1,8 @@
 module Neighborparrot
   class Channel
     include Neighborparrot::Stats
+    include Neighborparrot::Logger
+
     attr_reader :name
 
     def initialize(name, app_info)
@@ -39,7 +41,7 @@ module Neighborparrot
     end
     # Return a ChannelBroker
     def create_broker
-      if false
+      if false # AMQP are very experimental
         key = "#{@app_info['api_id']}-#{@name}"
         @broker = AMQPChannelBroker.new(key)
         @broker.start

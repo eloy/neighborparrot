@@ -13,7 +13,19 @@ module Rack
    end
  end
 
+fiber_pool = FiberPool.new(600)
+Goliath::Request.execute_block = proc do |&block|
+  fiber_pool.spawn(&block)
+end
+
 class Router < Goliath::API
+
+  def initialize
+    EM.error_handler do |e|
+      logger.info "Error raised during event loop: #{e.message}"
+      logger.info e.backtrace.inspect
+    end
+  end
 
   # Don't serve static pages on production
   if Neighborparrot.devel?

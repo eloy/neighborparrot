@@ -13,10 +13,10 @@ module Neighborparrot
       env.trace 'init connection'
       @env = env
       init_queue
-      initialize_connection # Defined in each endpoint
-      @application.stat_connection_open #
+      initialize_connection env # Defined in each endpoint
+      @application.stat_connection_open
       @channel = env.params['channel']
-      @env.logger.debug "Connected to channel #{@channel}"
+      logger.debug "Connected to channel #{@channel}"
       subscribe
     end
 
@@ -36,7 +36,6 @@ module Neighborparrot
     # Subscribe to desired channel
     def subscribe
       @env.trace 'subscribing'
-      @env.logger.debug "Subscribing the connection to the channel"
       @subscription_id = @application.subscribe(self) do |msg|
         @queue.push msg
       end
@@ -57,40 +56,24 @@ module Neighborparrot
     # Handle send request
     def prepare_send_request(env)
       env.trace 'prepare send request'
-      env.logger.debug "Prepare to send messate to channel #{@channel}"
-      unless env.params['event_id']
-        env.params['event_id'] = generate_message_id
-      end
-      input_queue.push env.params
-      return env.params['event_id']
+      # @application.stat_connection_open
+      event_id = env.params['event_id'] || generate_message_id
+      data = env.params['data']
+      message = pack_message_event(event_id, data) # TODO Distict packing for event source
+      channel = env.params['channel']
+      send_to_broker channel, message
+      return event_id
     end
 
     # Send the message to the broker for
     # broadcast to other clients
-    def send_to_broker(request)
-      env.logger.debug "Sent message to broker channel #{request['channel']}"
+    def send_to_broker(channel, message)
       env.trace 'sending to broker'
-      # Send messages to broker is a slow task
+      logger.debug "Sending message to channel #{channel}"
       EM.next_tick do
-        message = pack_message_event(request)
-        @application.send_message_to_channel request['channel'], message
+        @application.send_message_to_channel channel, message
         env.trace 'sended to broker'
       end
-    end
-
-    # Queue for input messages
-    # All incoming request are pushed to this queue
-    # and it send the request to send_to_broker
-    def input_queue
-      if @@global_input_queue.nil?
-        @@global_input_queue = EM::Queue.new
-        processor = proc { |request|
-          send_to_broker request
-          @@global_input_queue.pop(&processor)
-        }
-        @@global_input_queue.pop(&processor)
-      end
-      return @@global_input_queue
     end
 
     # Generate the message ID to be used as incoming reguest
@@ -99,13 +82,8 @@ module Neighborparrot
     end
 
     # Prepare a message as data message
-    def pack_message_event(request)
-      return "id:#{request['event_id']}\ndata:#{request['data']}\n\n"
+    def pack_message_event(event_id, data)
+      return "id:#{event_id}\ndata:#{data}\n\n"
     end
-
-    # All incoming request are pushed to this queue
-    # and it send the request to send_to_broker
-    private
-    @@global_input_queue = nil
   end
 end

@@ -3,14 +3,14 @@ require 'signature'
 
 module Neighborparrot
   class AuthError < Goliath::Validation::BadRequestError
+    include Neighborparrot::Logger
     def initialize(env,msg)
       super(msg)
-      env.logger.debug "Error #{msg}"
+      logger.debug "Error #{msg}"
     end
   end
   module Auth
     include Neighborparrot::Mongo
-
     attr_reader :presence_data
 
     # Return a unix UTC timestamp
@@ -29,8 +29,8 @@ module Neighborparrot
     # and WebSocketEndPoint in response
     def validate_connection_params
       @api_id = env.params['auth_key']
-      raise AuthError.new(env, "api_id is mandatory") if @api_id.nil?
-      raise AuthError.new(env, "no signature") unless env.params['auth_signature']
+      raise AuthError.new("api_id is mandatory") if @api_id.nil?
+      raise AuthError.new("no signature") unless env.params['auth_signature']
     end
 
     # Ensure valid send params and
@@ -39,26 +39,22 @@ module Neighborparrot
     def validate_send_params
       @api_id = env.params['auth_key']
       @data = env.params['data']
-      raise AuthError.new(env, "api_id is mandatory") if @api_id.nil?
-      raise AuthError.new(env, "data is mandatory") if @data.nil?
-      raise AuthError.new(env, "no signature") unless env.params['auth_signature']
+      raise AuthError.new("api_id is mandatory") if @api_id.nil?
+      raise AuthError.new("data is mandatory") if @data.nil?
+      raise AuthError.new("no signature") unless env.params['auth_signature']
     end
 
-    # Check authorization
-    # retrive application information and
-    # exec block code if the request have a valid signature
-    def auth_request(&blk)
+    # Should be called in Synchrony
+    def authenticate
       @application = Neighborparrot::Application.get_application @api_id
-      mongo_req = mongo_first('app_info', :api_id => @api_id)
-      mongo_req.callback do |app_info|
-        if app_info && valid_signature?(app_info)
-          @application.app_info = app_info
-          blk.call @application
-        else
-          env.logger.debug "Bad login. Obtained app_info #{app_info} #{env.params}"
-          login_failed
-        end
+      app_info = mongo_db.collection('app_info').first(:api_id => @api_id)
+      if app_info && valid_signature?(app_info)
+        @application.app_info = app_info
+        logger.debug "LOGIN OK"
+        return true
       end
+      logger.debug "Bad login for application_id#{app_info['application_id']}"
+      return false
     end
   end
 end

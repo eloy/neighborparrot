@@ -1,6 +1,7 @@
 module Neighborparrot
   module Stats
     include Neighborparrot::Mongo
+    include Neighborparrot::Logger
 
     # Inialize stats for current application
     def initialize_stats
@@ -11,8 +12,7 @@ module Neighborparrot
       @max_channels = 0
       @current_messages = Hash.new()
       create_push_timer
-      @logger = Neighborparrot.logger
-      @logger.debug "Stats init for application"
+      logger.debug "Stats init for application"
     end
 
     def stop_stats
@@ -68,7 +68,7 @@ module Neighborparrot
 
     # Store stats in mongo and reset counters
     def push_stats
-      @logger.debug "Pushing stats"
+      logger.debug "Pushing stats"
       base = base_stats
       conn_stats = base.merge(:conn => @total_connections, :max_conn => @max_connections, :chan => @max_channels)
       msg_stats = []

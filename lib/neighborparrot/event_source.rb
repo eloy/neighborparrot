@@ -20,15 +20,14 @@ class EventSourceEndPoint < Goliath::API
   end
 
   def send_to_client(msg)
-    @env.trace 'sending_chunk'
-    # @env.logger.debug "Send message #{msg} to connection X in channel #{@channel}"
+    env.trace 'sending_chunk'
     @env.chunked_stream_send msg
   end
 
-  def initialize_connection
-    @env.chunked_stream_send ": " << Array.new(2048, " ").join << "\n\n"
+  def initialize_connection(env)
+    env.chunked_stream_send ": " << Array.new(2048, " ").join << "\n\n"
     @keep_alive_timer = EventMachine::PeriodicTimer.new(Neighborparrot::KEEP_ALIVE_TIMER) do
-      @env.chunked_stream_send ':\n\n' # Empty event stream
+      env.chunked_stream_send ':\n\n' # Empty event stream
     end
   end
 
@@ -40,14 +39,14 @@ class EventSourceEndPoint < Goliath::API
   def response(env)
     @env = env
     env.trace 'open connection'
-    validate_connection_params # Ensure required parameters
+    validate_connection_params# Ensure required parameters
 
-    EM.next_tick do
-      auth_request do |app|
-       prepare_connection env
-      end
+    authenticated = authenticate
+    if authenticated
+      EM.next_tick { prepare_connection env }
+      chunked_streaming_response(200, HEADERS)
+    else
+      [401, {}, "Unauthorized"]
     end
-
-    chunked_streaming_response(200, HEADERS)
   end
 end

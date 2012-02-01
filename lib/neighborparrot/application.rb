@@ -1,3 +1,4 @@
+require 'pp'
 module Neighborparrot
 
   # Customer application model
@@ -5,6 +6,7 @@ module Neighborparrot
   # store persistent data like max connections and in mongodb
   class Application
     include Neighborparrot::Stats
+    include Neighborparrot::Logger
 
     attr_accessor :api_id, :app_info
 
@@ -17,16 +19,14 @@ module Neighborparrot
       @api_id = api_id
       @app_info = nil
       @channels = {}
-      @logger = Neighborparrot.logger
       initialize_stats
-      @logger.debug "Created application"
+      logger.debug "Created application"
     end
 
     # Remove application
     # stop timers, flush stats and remove from current_applications
     def destroy
       stop_stats
-      @logger.debug "Destroyed application"
       @@applications.delete @api_id
     end
 
@@ -45,7 +45,10 @@ module Neighborparrot
       channel = @channels[channel_name]
       if channel
         channel.unsubscribe(subscription_id)
-        EM.next_tick { cleanup_after_unsubscribe channel }
+        # EM.next_tick { cleanup_after_unsubscribe channel }
+        cleanup_after_unsubscribe channel
+      else
+        logger.debug "Trying to unsubscribe for an inexistant channel #{channel_name}"
       end
     end
 
@@ -54,11 +57,10 @@ module Neighborparrot
     # and application if needed
     def cleanup_after_unsubscribe(channel)
       return if channel.listeners_count > 0
+      logger.debug "destroying channel #{channel.name}"
       @channels.delete channel.name
       stat_channel_destroyed channel.name
-      if @channels.size == 0
-        destroy
-      end
+      destroy if @channels.size == 0
     end
 
     # Return the application with desired api_id
@@ -76,20 +78,26 @@ module Neighborparrot
     def get_channel(name)
       channel = @channels[name]
       return channel unless channel.nil?
-      # If not exists, create
+      # If not exists, create it
+      logger.debug "Created channel #{name}"
       stat_channel_created name # Stats and log
       @channels[name] = Neighborparrot::Channel.new(name, @app_info)
     end
 
     # Send desired message to channel
     def send_message_to_channel(channel_name, message)
+      logger.debug "Sending in application to channel #{channel_name}"
       channel = @channels[channel_name]
-      return if channel.nil?
+      if channel.nil?
+        logger.debug "Trying to send a message to a void channel #{channel_name} en #{self}"
+        return
+      end
       channel.publish message
       stat_message_sended channel_name
       # TODO: Message received should count messages received in other parrot servers
       # Should be moved to channel
       stat_message_received channel_name, channel.listeners_count
+      logger.debug "Sended to channel #{channel_name}"
     end
   end
 end

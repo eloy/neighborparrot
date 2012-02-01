@@ -13,15 +13,16 @@ class WebSocketEndPoint < Goliath::WebSocket
     env.logger.debug "open WebSocket connection"
     env.trace 'open WebSocket connection'
     validate_connection_params # Ensure required parameters
-    EM.next_tick do
-      auth_request do |app|
-        prepare_connection env
-      end
+    authenticated = authenticate
+    if authenticated
+      EM.next_tick { prepare_connection env }
+    else
+      [401, {}, "Unauthorized"]
     end
   end
 
   # WebSockets don't need extra initialization
-  def initialize_connection
+  def initialize_connection(env)
   end
 
   def close_endpoint

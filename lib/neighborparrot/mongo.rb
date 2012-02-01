@@ -1,5 +1,5 @@
 require 'em-mongo'
-
+require 'em-synchrony/em-mongo'
 module Neighborparrot
   module Mongo
     # class db connection

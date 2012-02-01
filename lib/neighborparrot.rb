@@ -6,8 +6,11 @@ require 'rack/multipart/parser'
 require "rubygems"
 require 'goliath'
 require 'goliath/websocket'
+require 'fiber_pool'
+require 'log4r'
 
 require 'neighborparrot/constants'
+require 'neighborparrot/logger'
 require 'neighborparrot/brokers/test_channel_broker'
 require 'neighborparrot/brokers/channel_broker'
 require 'neighborparrot/mongo'
@@ -22,13 +25,3 @@ require 'neighborparrot/web_sockets'
 require 'neighborparrot/send_request'
 require 'neighborparrot/router'
 
-
-module Neighborparrot
-  def self.logger
-    Thread.current[Goliath::Constants::GOLIATH_ENV].logger
-  end
-
-  def logger
-    Neighborparrot.logger
-  end
-end
