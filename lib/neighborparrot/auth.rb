@@ -20,8 +20,10 @@ module Neighborparrot
 
     def valid_signature?(app_info)
       token = Signature::Token.new(app_info['api_id'], app_info['api_key'])
-      request = Signature::Request.new(env["REQUEST_METHOD"], env["REQUEST_PATH"], env.params)
-      request.authenticate_by_token token
+      path = env["REQUEST_PATH"]
+      method = path == '/open' ? 'GET' : env["REQUEST_METHOD"] # ES Polyfill require POST
+      request = Signature::Request.new(method, path, env.params)
+      request.authenticate_by_token token, nil
     end
 
     # Ensure valid connection params and
@@ -53,7 +55,7 @@ module Neighborparrot
         logger.debug "LOGIN OK"
         return true
       end
-      logger.debug "Bad login for application_id#{app_info['application_id']}"
+      logger.debug "LOGIN FAILED for #{@api_id}"
       return false
     end
   end
