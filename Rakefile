@@ -39,9 +39,11 @@ task :precompile_assets do
   out_path = "public/js"
   Dir.new(coffee_path).each do |file|
     if file.match '.coffee'
-      coffee = CoffeeScript.compile File.read("#{coffee_path}/#{file}")
-      out_file = file.sub ".coffee", ".js"
-      out = File.new("#{out_path}/#{out_file}", "w")
+      coffee_file = "#{coffee_path}/#{file}"
+      out_file = "#{out_path}/#{file.sub ".coffee", ".js"}"
+      puts "Compile #{coffee_file} => #{out_file}"
+      coffee = CoffeeScript.compile File.read(coffee_file)
+      out = File.new(out_file, "w")
       out.write coffee
       out.close
     end
