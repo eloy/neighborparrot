@@ -3,6 +3,7 @@
   <title>Web Socket service</title>
   <META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE">
   <% if @use_polyfill %>
+    <script type="text/javascript" src="<%= @assets_url %>/pf/json2.js"></script>
     <script type="text/javascript" src="<%= @assets_url %>/pf/swfobject.js"></script>
     <script type="text/javascript" src="<%= @assets_url %>/pf/web_socket.js"></script>
   <% end %>

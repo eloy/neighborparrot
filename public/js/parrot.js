@@ -2,7 +2,7 @@
 
   window.Parrot = (function() {
 
-    Parrot.brokerHost = "http://127.0.0.1:9000";
+    Parrot.brokerHost = "http://10.254.0.250:9000";
 
     Parrot.debug = true;
 
@@ -29,9 +29,10 @@
     };
 
     Parrot.prototype.post = function(data) {
-      var frame;
+      var frame, msg;
+      msg = JSON.stringify(data);
       frame = window.document.getElementById('parrot-iframe');
-      return frame.contentWindow.postMessage(data, Parrot.brokerHost);
+      return frame.contentWindow.postMessage(msg, Parrot.brokerHost);
     };
 
     Parrot.prototype.log = function(msg) {
@@ -97,7 +98,6 @@
     };
 
     Parrot.prototype.onIFrameReady = function() {
-      console.log("IFrame preparado");
       return this.post({
         action: 'connect',
         params: this.params

@@ -3,6 +3,7 @@
   <title>Event Source service</title>
   <META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE">
   <% if use_polyfill %>
+    <script type="text/javascript" src="<%= @assets_url %>/pf/json2.js"></script>
     <script type="text/javascript" src="<%= @assets_url %>/pf/eventsource.js"></script>
   <% end %>
   <script type="text/javascript" src="<%= @assets_url %>/js/broker.js"></script>

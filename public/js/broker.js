@@ -1,11 +1,13 @@
 (function() {
-  var _ref;
+  var WEB_SOCKET_DEBUG, _ref;
 
   window['getParam'] = function(name) {
     var results;
     results = new RegExp('[\\?&]' + name + '=([^&#]*)').exec(window.location.href);
     if (results && results.length > 0) return results[1];
   };
+
+  WEB_SOCKET_DEBUG = true;
 
   window.Broker = (function() {
 
@@ -75,7 +77,7 @@
       var url, _this;
       _this = this;
       url = "" + this.server + "/" + (this.toQuery('ws', params));
-      this.ws = new WebSocket(url);
+      this.ws = new window.WebSocket(url);
       this.ws.addEventListener('open', function(e) {
         return _this.on_open.call(_this, e);
       }, false);
@@ -88,14 +90,20 @@
     };
 
     Broker.prototype.dispatchEventSource = function(event) {
-      if (event.data.action === 'connect') {
-        return this.openEventSource(event.data.params);
+      var msg;
+      msg = JSON.parse(event.data);
+      if (msg.action === 'connect') {
+        return this.openEventSource(msg.params);
+      } else {
+        return console.log("Desconocido: " + event.data.action);
       }
     };
 
     Broker.prototype.dispatchWebSocket = function(event) {
-      if (event.data.action === 'connect') this.openWebSocket(event.data.params);
-      if (event.data.action === 'send') return this.ws.send(event.data.data);
+      var msg;
+      msg = JSON.parse(event.data);
+      if (msg.action === 'connect') this.openWebSocket(msg.params);
+      if (msg.action === 'send') return this.ws.send(msg.data);
     };
 
     Broker.prototype.toQuery = function(path, params) {

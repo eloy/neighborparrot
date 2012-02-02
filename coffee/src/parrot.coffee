@@ -2,7 +2,7 @@
 #
 class window.Parrot
 #  @brokerHost = "https://neighborparrot.net"
-  @brokerHost = "http://127.0.0.1:9000"
+  @brokerHost = "http://10.254.0.250:9000"
   @debug = true
 
   # Parrot constructot
@@ -30,8 +30,9 @@ class window.Parrot
 
   # Post message to the iframe window
   post: (data) ->
+    msg = JSON.stringify data
     frame = window.document.getElementById('parrot-iframe')
-    frame.contentWindow.postMessage data, Parrot.brokerHost
+    frame.contentWindow.postMessage msg, Parrot.brokerHost
 
   # Convenient function for logging
   log: (msg) ->
@@ -84,7 +85,6 @@ class window.Parrot
       @log "Created IFrame"
 
   onIFrameReady: ->
-    console.log "IFrame preparado"
     @post {action: 'connect', params: @params}
 
   send: (message) ->
