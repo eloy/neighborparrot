@@ -60,7 +60,8 @@ namespace :deploy do
     run "cp /etc/capistrano/neighborparrot/broker.rb #{release_path}/config/broker.rb"
     run "cd #{release_path} && bundle install --without=test development --deployment"
     # Precompile assets
-    run "cd #{release_path} && bundle exec rake precompile_assets"
+    run "mkdir #{release_path}/public/js"
+    # run "cd #{release_path}; bundle exec rake precompile_assets"
   end
 
   after "deploy:update_code", "deploy:prepare_app"

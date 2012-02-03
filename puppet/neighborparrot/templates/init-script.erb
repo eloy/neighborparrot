@@ -29,7 +29,7 @@ SSL_KEY=/etc/neighborparrot/cert/neighborparrot.net.key
 DAEMON_ARGS="-e prod -P ${PIDFILE} -l ${LOGFILE} -d --ssl --ssl-key ${SSL_KEY} --ssl-cert ${SSL_CERT} -a 127.0.0.1 -p 9000"
 
 
-RUBY=$(which ruby)
+BUNDLE=$(which bundle)
 
 DAEMON_LOCKFILE=/var/lock/$NAME
 
@@ -37,7 +37,7 @@ start() {
     echo -n $"Starting ${NAME}: "
         
     cd $APP_HOME
-    $RUBY $DAEMON $DAEMON_ARGS
+    $BUNDLE exec ./${DAEMON} $DAEMON_ARGS
 
     sleep 2
 
