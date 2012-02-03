@@ -47,3 +47,9 @@ class Router < Goliath::API
   map '/ws'      ,WebSocketEndPoint
 
 end
+
+# For run a custom runner
+# runner = Goliath::Runner.new(ARGV, nil)
+# runner.api = Router.new
+# runner.app = Goliath::Rack::Builder.build(Router, runner.api)
+# runner.run

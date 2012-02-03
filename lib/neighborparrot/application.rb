@@ -45,8 +45,8 @@ module Neighborparrot
       channel = @channels[channel_name]
       if channel
         channel.unsubscribe(subscription_id)
-        # EM.next_tick { cleanup_after_unsubscribe channel }
-        cleanup_after_unsubscribe channel
+        EM.next_tick { cleanup_after_unsubscribe channel }
+#        cleanup_after_unsubscribe channel
       else
         logger.debug "Trying to unsubscribe for an inexistant channel #{channel_name}"
       end
