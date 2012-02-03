@@ -6,8 +6,6 @@ window['getParam'] = (name) ->
   if results && results.length > 0
     return results[1]
 
-WEB_SOCKET_DEBUG = true
-
 # Broker service
 class window.Broker
   # Broker constructor
@@ -66,22 +64,6 @@ class window.Broker
       _this.on_error.call _this, e
     , false)
 
-  # open connection and add event listeners
-  # Called from index.html in the broker server
-  openWebSocket: (params)->
-    _this = @
-    url = "#{@server}/#{@toQuery('ws', params)}"
-    @ws = new window.WebSocket(url)
-    @ws.addEventListener('open', (e) ->
-      _this.on_open.call _this, e
-    , false)
-    @ws.addEventListener('message', (e) ->
-      _this.on_message.call _this, e
-    , false)
-    @ws.addEventListener('error', (e) ->
-      _this.on_error.call _this, e
-    , false)
-
   # Dispatch messages from the main window
   dispatchEventSource: (event) ->
     msg = JSON.parse(event.data)
@@ -90,16 +72,7 @@ class window.Broker
     else
       console.log "Desconocido: #{event.data.action}"
 
- # Dispatch messages from the main window
-  dispatchWebSocket: (event) ->
-    msg = JSON.parse(event.data);
-    if msg.action == 'connect'
-      @openWebSocket msg.params
-    if msg.action == 'send'
-      @ws.send msg.data
-
   toQuery: (path, params) ->
-    console.log params
     query = "#{path}?"
     for key,value of params
       query += "&#{key}=#{value}"

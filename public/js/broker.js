@@ -1,13 +1,11 @@
 (function() {
-  var WEB_SOCKET_DEBUG, _ref;
+  var _ref;
 
   window['getParam'] = function(name) {
     var results;
     results = new RegExp('[\\?&]' + name + '=([^&#]*)').exec(window.location.href);
     if (results && results.length > 0) return results[1];
   };
-
-  WEB_SOCKET_DEBUG = true;
 
   window.Broker = (function() {
 
@@ -73,22 +71,6 @@
       }, false);
     };
 
-    Broker.prototype.openWebSocket = function(params) {
-      var url, _this;
-      _this = this;
-      url = "" + this.server + "/" + (this.toQuery('ws', params));
-      this.ws = new window.WebSocket(url);
-      this.ws.addEventListener('open', function(e) {
-        return _this.on_open.call(_this, e);
-      }, false);
-      this.ws.addEventListener('message', function(e) {
-        return _this.on_message.call(_this, e);
-      }, false);
-      return this.ws.addEventListener('error', function(e) {
-        return _this.on_error.call(_this, e);
-      }, false);
-    };
-
     Broker.prototype.dispatchEventSource = function(event) {
       var msg;
       msg = JSON.parse(event.data);
@@ -99,16 +81,8 @@
       }
     };
 
-    Broker.prototype.dispatchWebSocket = function(event) {
-      var msg;
-      msg = JSON.parse(event.data);
-      if (msg.action === 'connect') this.openWebSocket(msg.params);
-      if (msg.action === 'send') return this.ws.send(msg.data);
-    };
-
     Broker.prototype.toQuery = function(path, params) {
       var key, query, value;
-      console.log(params);
       query = "" + path + "?";
       for (key in params) {
         value = params[key];
