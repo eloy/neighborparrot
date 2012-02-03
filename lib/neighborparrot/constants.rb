@@ -26,7 +26,7 @@ module Neighborparrot
     ASSETS_URL        = "https://neighborparrot.com"
   else
     SERVER_URL        = "http://127.0.0.1:9000"
-    WS_SERVER_URL     = "ws://10.254.0.250:9000"
+    WS_SERVER_URL     = "ws://127.0.0.1:9000"
     ASSETS_URL        = ""
   end
   SERVICES          = %w(ws es) # WebSockets, EventSource
