@@ -1,13 +1,11 @@
 require 'amqp'
 
-module Neighborparrot
-  USE_RABBITMQ = true
-end
-
 # Channel Broker with AMQP support
 # Gets messages from rabbitmq and sends to
 # channel members via Event Machine channel
 class AMQPChannelBroker
+  # Consume channel is the channel used to send
+  # the messages back to the connections
   attr_reader :consumer_channel
 
   @@_connection = nil
@@ -18,26 +16,20 @@ class AMQPChannelBroker
   end
 
   # Initialize EM channel for internal distribution
-  def initialize(env, room = AMQ::Protocol::EMPTY_STRING)
+  def initialize(room = AMQ::Protocol::EMPTY_STRING)
     @room = room
     @connection = AMQPChannelBroker.get_connection(env.rabbit_conf)
     @consumer_channel = EM::Channel.new
   end
 
-  # Unsubscribe when no more users in this channel
-  # TODO
-  def unsubscribe
-    # @channel.unsubscribe()
-  end
-
   # Send payload to rabbitmq queue
+  # TODO: Send messages to local users via consumer_channel
   # @param [String] payload to send
   def publish(payload)
-    # payload must end with \n
-    # payload = "#{payload}\n" if !payload.end_with? "\n"
     @provider_queue.publish(payload)
   end
 
+  # Start a rabbit mq subscription
   def start
     @provider_queue = AMQP::Channel.new(@connection, :auto_recovery => true).fanout(@room)
     @channel = AMQP::Channel.new(@connection, :auto_recovery => true)
@@ -47,6 +39,8 @@ class AMQPChannelBroker
   end
 
   # Reply rabbitmq paylod to room members
+  # TODO Local messages should be published via
+  # current consumer_channel, btw should ignore local messages here
   def handle_message(metadata, payload)
     @consumer_channel.push payload
   end
@@ -54,6 +48,6 @@ class AMQPChannelBroker
   # Manage channel exceptions
   # TODO
   def handle_channel_exception(channel, channel_close)
-    puts "Oops... a channel-level exception: code = #{channel_close.reply_code}, message = #{channel_close.reply_text}"
+    env.logger.info "Oops... a channel-level exception: code = #{channel_close.reply_code}, message = #{channel_close.reply_text}"
   end
 end

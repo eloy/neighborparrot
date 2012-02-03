@@ -1,34 +1,32 @@
-require 'json'
-module Neighborparrot
+class SendRequestEndPoint < Goliath::API
+  include Neighborparrot::Connection
+  include Neighborparrot::Auth
 
-  # Handle send request
-  def prepare_send_request(env)
-    env.trace 'prepare send request'
-    unless env.params['event_id']
-      env.params['event_id'] = generate_message_id
+  # Default headers
+  HEADERS = { 'Access-Control-Allow-Origin' => '*',
+    'Content-Type' => 'text/event-stream',
+    'Cache-Control' => 'no-cache',
+    'Connection' => 'keep-alive',
+    'Transfer-Encoding' => 'chunked',
+    'X-STREAM' => 'Neighborparrot',
+    'SERVER' => 'Neighborparrot'
+  }
+
+  # on close action
+  def on_close(env)
+
+  end
+
+  # Prepare the event source connection
+  def response(env)
+    env.trace 'open send connection'
+    env.logger.debug "Begin send request"
+    validate_send_params  # Ensure required parameters
+    if authenticate
+      [200, {}, prepare_send_request(env)]
+    else
+      [401, {}, "Unauthorized"]
     end
-    @@input_queue.push env.params
-    return env.params['event_id']
-  end
-
-  def send_to_broker(request)
-    # env.logger.debug "Sent message to channel #{request[:channel]}"
-    env.trace 'looking channel'
-    broker = @@channel_brokers[request[:channel]]
-    env.trace 'sending to broker'
-    return if broker.nil?
-    # Send messages to broker is a slow task
-    EM.next_tick { broker.publish pack_message_event(request) }
-    env.trace 'sended to broker'
-  end
-
-  private
-  def prepare_input_queue
-    @@input_queue = EM::Queue.new
-    processor = proc { |request|
-      send_to_broker request
-      @@input_queue.pop(&processor)
-    }
-    @@input_queue.pop(&processor)
   end
 end
+

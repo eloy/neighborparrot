@@ -1,6 +1,9 @@
 # config
 config/broker.rb
 
+# static js
+public/js
+
 # rcov generated
 coverage
 

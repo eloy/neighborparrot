@@ -75,7 +75,7 @@ backend neighborparrot-ssl
      option ssl-hello-chk HEAD /check.txt HTTP/1.0
 #     balance roundrobin
 
-     server srv0 127.0.0.1:9000 weight 1 maxconn 100 check inter 4000
+     server srv0 127.0.0.1:9000 weight 1 maxconn 500 check inter 4000
 #     server srv1 127.0.0.1:9001 weight 1 maxconn 100 check inter 4000
 #     server srv2 127.0.0.1:9002 weight 1 maxconn 100 check inter 4000
 
@@ -85,7 +85,7 @@ backend neighborparrot-ssl
 #      option httpchk GET /status
 # #    balance  roundrobin
 
-#      server srv0 127.0.0.1:9000 weight 1 maxconn 100 check inter 4000
+#      server srv0 127.0.0.1:9000 weight 1 maxconn 500 check inter 4000
 # #     server srv1 127.0.0.1:9001 weight 1 maxconn 100 check inter 4000
 # #     server srv2 127.0.0.1:9002 weight 1 maxconn 100 check inter 4000
 

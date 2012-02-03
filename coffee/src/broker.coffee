@@ -6,14 +6,31 @@ window['getParam'] = (name) ->
   if results && results.length > 0
     return results[1]
 
-
 # Broker service
 class window.Broker
   # Broker constructor
   # Get channel and parent url from the parameters
-  constructor: ->
+  constructor: (service, server=nil) ->
+    @service = service
+    @server = server
     @channel = window.getParam('channel')
     @parent_url = window.getParam('parent_url')
+    @addMessageListener(@service)
+    @post("iframeReady:")
+
+ # Let the window listen messages from the iframe
+  addMessageListener: (service) ->
+    _this = @
+    if service == 'es'
+      bounder = (e) -> _this.dispatchEventSource.call _this, e
+    else
+      bounder = (e) -> _this.dispatchWebSocket.call _this, e
+
+    if window['addEventListener']
+      window.addEventListener 'message', bounder
+    else
+      window.attachEvent 'onmessage', bounder
+    # TODO: if Postmessage is not supported??
 
   # Post message to the parent window
   post: (data) ->
@@ -21,30 +38,44 @@ class window.Broker
     parent.postMessage data, target_url
 
   # On connection open send a control event to the parrot
-  onEventSourceOpen: (event) ->
+  on_open: (event) ->
     @post('open:')
 
   # On connection error send a control event to the parrot
-  onEventSourceError:  (event) ->
+  on_error:  (event) ->
     @post("error:#{event.data}")
 
   # On message post to the parent window
-  onEventSourceMessage: (event) ->
+  on_message: (event) ->
     @post("data:#{event.data}")
 
   # open connection and add event listeners
   # Called from index.html in the broker server
-  open: ->
+  openEventSource: (params)->
     _this = @
-    es = new EventSource("/open?channel=#{@channel}");
+    es = new EventSource(@toQuery('/open', params))
     es.addEventListener('open', (e) ->
-      _this.onEventSourceOpen.call _this, e
+      _this.on_open.call _this, e
     , false)
     es.addEventListener('message', (e) ->
-      _this.onEventSourceMessage.call _this, e
+      _this.on_message.call _this, e
     , false)
     es.addEventListener('error', (e) ->
-      _this.onEventSourceError.call _this, e
+      _this.on_error.call _this, e
     , false)
+
+  # Dispatch messages from the main window
+  dispatchEventSource: (event) ->
+    msg = JSON.parse(event.data)
+    if msg.action == 'connect'
+      @openEventSource msg.params
+    else
+      console.log "Desconocido: #{event.data.action}"
+
+  toQuery: (path, params) ->
+    query = "#{path}?"
+    for key,value of params
+      query += "&#{key}=#{value}"
+    query
 
 @app = window.app ? {}

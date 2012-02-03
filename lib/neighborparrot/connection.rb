@@ -1,23 +1,29 @@
 module Neighborparrot
-
   # Subscriber connection representation
-  class Connection
-    include Neighborparrot
+  module Connection
+    attr_reader :channel, :application
+
+    # Message counter
+    @@next_message_id = 1
 
     # Create a connection
     # Create a queue for the connection
-    # Locate the desired channel and susbcribe thier queue to the channel
-    def initialize(env)
+    # Stat the connection for statistics
+    def prepare_connection(env)
       env.trace 'init connection'
       @env = env
-      @channel = env.params['channel']
-      @env.logger.debug "Connected to channel #{@channel}"
       init_queue
-      @queue.push ": " << Array.new(2048, " ").join << "\n\n" # Init stream
-      # keep_alive_timer # Not neede??
+      initialize_connection env # Defined in each endpoint
+      @application.stat_connection_open
+      @channel = env.params['channel']
+      logger.debug "Connected to channel #{@channel}"
       subscribe
     end
 
+    # Prepare output queue
+    # Messages to this user are pushed to this
+    # queue and it send the messages to
+    # send_to_client
     def init_queue
       @queue = EM::Queue.new
       processor = proc { |msg|
@@ -27,34 +33,57 @@ module Neighborparrot
       @queue.pop(&processor)
     end
 
-    def send_to_client(msg)
-      @env.trace 'sending_chunk'
-      # @env.logger.debug "Send message msg to connection X in channel #{@channel}"
-      @env.chunked_stream_send msg
-    end
-
-    def keep_alive_timer
-      @timer = EventMachine::PeriodicTimer.new(KEEP_ALIVE_TIMER) do
-        @queue.push ':\n\n' # Empty event stream
-      end
-    end
-
+    # Subscribe to desired channel
     def subscribe
       @env.trace 'subscribing'
-      @env.logger.debug "Subscribing the connection to the channel"
-      @broker = get_channel(@env, @channel)
-      @subscription_id = @broker.consumer_channel.subscribe do |msg|
+      @subscription_id = @application.subscribe(self) do |msg|
         @queue.push msg
       end
     end
 
-    def close_stream
-      @env.chunked_stream_close
+    # Called when close connection
+    # Unsubscribe from current channel and call close_endpoint for
+    # service depenent actions
+    def on_close(env)
+      env.logger.debug "unsubscribe customer from channel #{@channel}"
+      if @application
+        @application.stat_connection_close
+        @application.unsubscribe(@channel, @subscription_id)
+      end
+      close_endpoint
     end
 
-    def on_close
-      @env.logger.debug "unsubscribe custome from channel #{@channel}"
-      @broker.consumer_channel.unsubscribe(@subscription_id)
+    # Handle send request
+    def prepare_send_request(env)
+      env.trace 'prepare send request'
+      # @application.stat_connection_open
+      event_id = env.params['event_id'] || generate_message_id
+      data = env.params['data']
+      message = pack_message_event(event_id, data) # TODO Distict packing for event source
+      channel = env.params['channel']
+      send_to_broker channel, message
+      return event_id
+    end
+
+    # Send the message to the broker for
+    # broadcast to other clients
+    def send_to_broker(channel, message)
+      env.trace 'sending to broker'
+      logger.debug "Sending message to channel #{channel}"
+      EM.next_tick do
+        @application.send_message_to_channel channel, message
+        env.trace 'sended to broker'
+      end
+    end
+
+    # Generate the message ID to be used as incoming reguest
+    def generate_message_id
+      @@next_message_id += 1
+    end
+
+    # Prepare a message as data message
+    def pack_message_event(event_id, data)
+      return "id:#{event_id}\ndata:#{data}\n\n"
     end
   end
 end

@@ -2,6 +2,7 @@
 
 require 'rubygems'
 require 'bundler'
+require 'coffee-script'
 begin
   Bundler.setup(:default, :development)
 rescue Bundler::BundlerError => e
@@ -33,3 +34,18 @@ Rake::RDocTask.new do |rdoc|
   rdoc.rdoc_files.include('lib/**/*.rb')
 end
 
+task :precompile_assets do
+  coffee_path = "coffee/src"
+  out_path = "public/js"
+  Dir.new(coffee_path).each do |file|
+    if file.match '.coffee'
+      coffee_file = "#{coffee_path}/#{file}"
+      out_file = "#{out_path}/#{file.sub ".coffee", ".js"}"
+      puts "Compile #{coffee_file} => #{out_file}"
+      coffee = CoffeeScript.compile File.read(coffee_file)
+      out = File.new(out_file, "w")
+      out.write coffee
+      out.close
+    end
+  end
+end
