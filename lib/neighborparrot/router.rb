@@ -19,6 +19,7 @@ Goliath::Request.execute_block = proc do |&block|
 end
 
 class Router < Goliath::API
+  include Neighborparrot::Logger
 
   def initialize
     EM.error_handler do |e|
