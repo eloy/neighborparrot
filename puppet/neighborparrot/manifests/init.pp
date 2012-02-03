@@ -48,7 +48,14 @@ class neighborparrot {
     content  => template("neighborparrot/init-script.erb"),
   }
 
+  # Mongo
+  #=========================================================
+  package {'mongodb':
+    ensure => installed,
+  }
+  
   # Rabbit MQ
+  #=========================================================
   package { 'rabbitmq-server':
     ensure => installed,
   }
@@ -83,6 +90,7 @@ class neighborparrot {
   }
 
   # HA Proxy
+  #=========================================================
   package {'haproxy':
     ensure => installed,
     require => File['haproxy-config'],
