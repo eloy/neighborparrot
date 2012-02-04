@@ -9,8 +9,10 @@ source "http://rubygems.org"
 gem 'capistrano'
 gem 'rake'
 
+# Rspec is required by rake script
+gem "rspec"
+
 group :development do
-  gem "rspec"
   gem "bundler"
   gem "rcov"
 end
