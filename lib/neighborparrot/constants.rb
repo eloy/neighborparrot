@@ -1,8 +1,8 @@
 module Neighborparrot
   HOSTNAME       = `hostname`.strip
   ROOT_PATH         = File.expand_path(File.dirname(__FILE__) + '/../../')
-  KEEP_ALIVE_TIMER  = 10 # How send keep alive pings in event source
-  PUSH_STATS_FREC   = 30 # How ofter stats are pushed to server
+  KEEP_ALIVE_TIMER  = 10 # How often send keep alive pings in event source
+  PUSH_STATS_FREC   = 600 # How often stats are pushed to server
 
   def self.test?
     Neighborparrot.env == :test
