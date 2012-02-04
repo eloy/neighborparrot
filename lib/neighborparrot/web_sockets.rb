@@ -35,7 +35,7 @@ class WebSocketEndPoint < Goliath::WebSocket
   end
 
   def on_message(env, message)
-    env.logger.info("WS MESSAGE: #{message}")
+    env.logger.debug("Begin WebSocket message.")
     @application.send_message_to_channel @channel, message
   end
 
