@@ -167,12 +167,12 @@ class window.Parrot
     setTimeout(loader, 100)
 
   loadPolyfills: ->
-    window.WEB_SOCKET_SWF_LOCATION = "#{@ASSETS_SERVER}/pf/WebSocketMain.swf"
+    window.WEB_SOCKET_SWF_LOCATION = "#{Parrot.ASSETS_SERVER}/pf/WebSocketMain.swf"
     window.WEB_SOCKET_SUPPRESS_CROSS_DOMAIN_SWF_ERROR = true
     polyfills = ['swfobject.js', 'web_socket.js']
     head = document.getElementById('head');
     for src in polyfills
       js = document.createElement('script')
       js.type = "text/javascript"
-      js.src = "#{@ASSETS_SERVER}/pf/#{src}"
+      js.src = "#{Parrot.ASSETS_SERVER}/pf/#{src}"
       head.appendChild(js)
