@@ -13,10 +13,6 @@ module Rack
    end
  end
 
-fiber_pool = FiberPool.new(600)
-Goliath::Request.execute_block = proc do |&block|
-  fiber_pool.spawn(&block)
-end
 
 class Router < Goliath::API
   include Neighborparrot::Logger
@@ -48,6 +44,14 @@ class Router < Goliath::API
   map '/ws'      ,WebSocketEndPoint
 
 end
+
+
+# For fibers
+#fiber_pool = FiberPool.new(600)
+#Goliath::Request.execute_block = proc do |&block|
+#  fiber_pool.spawn(&block)
+#end
+
 
 # For run a custom runner
 # runner = Goliath::Runner.new(ARGV, nil)
