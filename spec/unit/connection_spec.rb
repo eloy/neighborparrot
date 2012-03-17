@@ -18,13 +18,16 @@ class DummyClient
   def input_queue_nil?
     @@global_input_queue.nil?
   end
+
+  def initialize_connection(env)
+  end
 end
 
 describe Neighborparrot::Connection do
-
   before :each do
     @env = double('env').as_null_object
     @c = DummyClient.new
+    @c.stub(:logger) { double('logger').as_null_object }
     @c.fake_queue nil
     @c.env = @env
     @c.application = factory_application @env
@@ -42,7 +45,7 @@ describe Neighborparrot::Connection do
     it 'should init connection queue' do
       @c.env.stub(:config) { { 'use_rabbit' => false }}
       init_stream = ": " << Array.new(2048, " ").join << "\n\n"
-      queue.should_receive(:push).with(init_stream)
+      @c.should_receive(:subscribe)
       @c.prepare_connection(@env)
     end
 
