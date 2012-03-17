@@ -28,7 +28,7 @@ class EventSourceEndPoint < Goliath::API
   # Last step in the message live,
   # just send the message to the client stream
   def send_to_client(msg)
-    env.trace 'sending_chunk'
+    @env.trace 'sending_chunk'
     @env.chunked_stream_send pack_event_source_message msg
   end
 

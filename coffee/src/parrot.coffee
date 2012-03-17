@@ -45,6 +45,12 @@ class window.Parrot
   error: (msg) ->
     console.warn msg if @debug
 
+  # Bind a listener to all channels
+  bindAll: (listener) ->
+    @allListener = listener
+
+
+  # Bind a listener to a channel
   bind: (channel, listener) ->
     @listeners[channel] = listener
 
@@ -53,7 +59,8 @@ class window.Parrot
   demuxMessage: (message) ->
     data = JSON.parse message.data
     listener = @listeners[data.channel]
-    listener data
+    listener data if listener
+    @allListener data if @allListener
 
   #===============================================
   # Event Source

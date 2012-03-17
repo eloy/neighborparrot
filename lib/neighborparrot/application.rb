@@ -8,10 +8,11 @@ module Neighborparrot
     include Neighborparrot::Stats
     include Neighborparrot::Logger
 
-    attr_accessor :api_id, :app_info
+    attr_accessor :api_id, :app_info, :channels
 
     # Global application Hash.
-    # Contains all the application instances indexed by api_id
+    # Contains all the application instances
+    # indexed by api_id
     @@applications = Hash.new
 
     # Initializer, setup app_info values
@@ -24,18 +25,51 @@ module Neighborparrot
     end
 
     # Remove application
-    # stop timers, flush stats and remove from current_applications
+    # stop timers, flush stats and remove
+    # from current_applications
     def destroy
       stop_stats
       @@applications.delete @api_id
     end
 
-    # Subscribe to desired channel and perform the block
-    # with msg arg
+    # Subscribe the endpoint to desired channel
+    # and perform the block with the msg as arg.
+    # If application has presence enabled, the send the
+    # connect event to other peers and send the current
+    # users to the new connection.
     # @return [int] subscription_id for later disconnect
-    def subscribe(endpoint, &block)
-      channel = get_channel(endpoint.channel)
-      channel.subscribe(endpoint, block)
+    def subscribe(endpoint, channel_name, &block)
+      channel = get_channel(channel_name)
+      subscription_id = channel.subscribe(endpoint, block)
+
+      if false # presence enabled
+        EM.defer { fire_presence_events endpoint, channel }
+      end
+
+      return subscription_id
+    end
+
+
+    def fire_presence_events(endpoint, channel)
+      channel_name = channel.name
+      # Send the connection open to other peers
+      channel.publish presence_open_message_generate(channel_name, 'open', endpoint.presence)
+
+      # And send to this peer other connections status
+      channel.subscriptors.each_value do |subscriptor|
+        endpoint.send_to_client presence_open_message_generate(channel_name, 'open', subscriptor)
+      end
+    end
+
+    def presence_open_message_generate(channel_name, action, subscriptor)
+      presence_channel = "#{channel_name}-presence"
+      a = { :channel => presence_channel,
+        :data => {
+          :user_id => subscriptor[:user_id],
+          :action => action,
+          :presence_data => subscriptor[:presence_data]
+        }
+      }
     end
 
     # Unsubscribe connection from channel
@@ -46,7 +80,6 @@ module Neighborparrot
       if channel
         channel.unsubscribe(subscription_id)
         EM.next_tick { cleanup_after_unsubscribe channel }
-#        cleanup_after_unsubscribe channel
       else
         logger.debug "Trying to unsubscribe for an inexistant channel #{channel_name}"
       end

@@ -1,4 +1,5 @@
 module Neighborparrot
+
   # Subscriber connection representation
   module Connection
     attr_reader :channel, :application
@@ -17,7 +18,7 @@ module Neighborparrot
       @application.stat_connection_open
       @channel = env.params['channel']
       logger.debug "Connected to channel #{@channel}"
-      subscribe
+      subscribe @channel
     end
 
     # Prepare output queue
@@ -34,11 +35,12 @@ module Neighborparrot
     end
 
     # Subscribe to desired channel
-    def subscribe
+    def subscribe(channel)
       @env.trace 'subscribing'
-      @subscription_id = @application.subscribe(self) do |msg|
+      @subscription_id = @application.subscribe(self, channel) do |msg|
         @queue.push msg
       end
+      @subscription_id
     end
 
     # Called when close connection

@@ -13,7 +13,7 @@ module Neighborparrot
   # Auth module.
   module Auth
     include Neighborparrot::Mongo
-    attr_reader :presence_data
+    attr_reader :presence
 
     # Return a unix UTC timestamp
     def current_timestamp
@@ -34,8 +34,11 @@ module Neighborparrot
     # and WebSocketEndPoint in response
     def validate_connection_params
       @api_id = env.params['auth_key']
-      @user_id = env.params['user_id']
-      @presence_data = env.params['presence_data']
+
+      user_id = env.params['user_id']
+      presence_data = env.params['presence_data']
+      @presence = { :user_id => user_id, :presence_data => presence_data }
+
       raise AuthError.new("api_id is mandatory") if @api_id.nil?
       raise AuthError.new("no signature") unless env.params['auth_signature']
     end
