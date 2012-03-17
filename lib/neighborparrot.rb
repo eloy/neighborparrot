@@ -8,6 +8,7 @@ require 'goliath'
 require 'goliath/websocket'
 require 'fiber_pool'
 require 'log4r'
+require 'json'
 
 require 'neighborparrot/constants'
 require 'neighborparrot/logger'
