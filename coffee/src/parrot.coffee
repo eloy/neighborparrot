@@ -6,6 +6,13 @@ class window.Parrot
   @ASSETS_SERVER = "https://neighborparrot.com"
   @debug = false
 
+
+  # Local!! remove it in production!!
+  @brokerHost = "http://localhost:9000"
+  @WEBSOCKET_SERVER = "ws://localhost:9000"
+  @ASSETS_SERVER = "http://localhost:9000"
+
+
   # Parrot constructot
   # @param [String] channel name
   # @param [Function] onmessage: callback called when receive a message
@@ -13,6 +20,7 @@ class window.Parrot
   # @param [Function] onerror: callback called on error
   constructor: (params) ->
     @params = params
+    @listeners = {}
     @service = @params['service']
     @channel = @params['channel']
     @log "Creating a parrot with channel: #{@channel}"
@@ -37,6 +45,16 @@ class window.Parrot
   error: (msg) ->
     console.warn msg if @debug
 
+  bind: (channel, listener) ->
+    @listeners[channel] = listener
+
+  # Demultiplex messages.
+  # Route each message to each listener
+  demuxMessage: (message) ->
+    data = JSON.parse message.data
+    listener = @listeners[data.channel]
+    listener data
+
   #===============================================
   # Event Source
   #===============================================
@@ -47,7 +65,7 @@ class window.Parrot
     msg = event.data
     @log "Dispatching message: @{msg}"
     if msg.match("^data:")
-      @onmessage @parseMessage msg
+      @demuxMessage @parseMessage msg
       @log "Calling onmessage callout"
     else if msg.match("^open:") && @onopen
       @onopen()
@@ -71,7 +89,7 @@ class window.Parrot
       window.attachEvent 'onmessage', bounder
     # TODO: if Postmessage is not supported??
 
-  # TODO : remove this!
+  # TODO : refactor this!
   parseMessage: (msg) ->
     { data: msg.substring(5) }
 
@@ -132,7 +150,7 @@ class window.Parrot
       _this.onopen.call _this, e
     , false)
     @ws.addEventListener('message', (e) ->
-      _this.onmessage.call _this, e
+      _this.demuxMessage.call _this, e
     , false)
     @ws.addEventListener('error', (e) ->
       _this.onerror.call _this, e
