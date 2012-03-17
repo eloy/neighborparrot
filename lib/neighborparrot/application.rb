@@ -34,34 +34,54 @@ module Neighborparrot
 
     # Subscribe the endpoint to desired channel
     # and perform the block with the msg as arg.
-    # If application has presence enabled, the send the
+    # If application has presence enabled, send the
     # connect event to other peers and send the current
     # users to the new connection.
     # @return [int] subscription_id for later disconnect
     def subscribe(endpoint, channel_name, &block)
       channel = get_channel(channel_name)
       subscription_id = channel.subscribe(endpoint, block)
-
-      if false # presence enabled
-        EM.defer { fire_presence_events endpoint, channel }
+      if true # presence enabled
+        EM.defer { fire_presence_open_events endpoint, channel }
       end
 
       return subscription_id
     end
 
-
-    def fire_presence_events(endpoint, channel)
+    # Send the presence open events to the current channel users
+    # and send the current user list to the new connection
+    def fire_presence_open_events(endpoint, channel)
       channel_name = channel.name
+      already_logged = channel.subscriptions_for(endpoint.presence[:user_id]).length > 1
+
       # Send the connection open to other peers
-      channel.publish presence_open_message_generate(channel_name, 'open', endpoint.presence)
+      unless already_logged
+        channel.publish presence_message_generate(channel_name, 'open', endpoint.presence)
+      end
 
       # And send to this peer other connections status
-      channel.subscriptors.each_value do |subscriptor|
-        endpoint.send_to_client presence_open_message_generate(channel_name, 'open', subscriptor)
+      channel.unique_subscriptors.each do |subscriptor|
+        unless subscriptor[:user_id] == endpoint.presence[:user_id] && !already_logged
+          endpoint.send_to_client presence_message_generate(channel_name, 'open', subscriptor)
+        end
       end
     end
 
-    def presence_open_message_generate(channel_name, action, subscriptor)
+    # Send the presence close events to the current channel users
+    # and fire the close web callback if configured
+    def fire_presence_close_events(endpoint, channel)
+      channel_name = channel.name
+      already_logged = channel.subscriptions_for(endpoint.presence[:user_id]).length > 0
+
+      # Send the connection close to other peers
+      unless already_logged
+        channel.publish presence_message_generate(channel_name, 'close', endpoint.presence)
+        # TODO: fire web callbacks
+      end
+    end
+
+    # Generate a presence open mesage
+    def presence_message_generate(channel_name, action, subscriptor)
       presence_channel = "#{channel_name}-presence"
       a = { :channel => presence_channel,
         :data => {
@@ -75,11 +95,15 @@ module Neighborparrot
     # Unsubscribe connection from channel
     # Remove channel if no more users connected
     # Remove application if no more apps
-    def unsubscribe(channel_name, subscription_id)
+    def unsubscribe(endpoint, channel_name, subscription_id)
       channel = @channels[channel_name]
       if channel
         channel.unsubscribe(subscription_id)
         EM.next_tick { cleanup_after_unsubscribe channel }
+        if true # presence enabled
+          EM.defer { fire_presence_close_events endpoint, channel }
+        end
+
       else
         logger.debug "Trying to unsubscribe for an inexistant channel #{channel_name}"
       end

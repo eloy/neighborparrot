@@ -50,7 +50,7 @@ module Neighborparrot
       env.logger.debug "unsubscribe customer from channel #{@channel}"
       if @application
         @application.stat_connection_close
-        @application.unsubscribe(@channel, @subscription_id)
+        @application.unsubscribe(self, @channel, @subscription_id)
       end
       close_endpoint
     end

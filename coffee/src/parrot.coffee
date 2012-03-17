@@ -46,12 +46,17 @@ class window.Parrot
     console.warn msg if @debug
 
   # Bind a listener to all channels
+  # Presene events are also triggered
   bindAll: (listener) ->
     @allListener = listener
 
-
   # Bind a listener to a channel
   bind: (channel, listener) ->
+    @listeners[channel] = listener
+
+  # Bind a listener to a presence channel
+  bindPresence: (channel, listener) ->
+    channel = channel + "-presence"
     @listeners[channel] = listener
 
   # Demultiplex messages.

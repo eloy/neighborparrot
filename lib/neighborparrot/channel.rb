@@ -33,6 +33,29 @@ module Neighborparrot
       @subscriptors.delete subscription_id
     end
 
+    # Return current subscription for desired user
+    # @param [Integer] user_id
+    # @return [Array] array of subscriptions
+    def subscriptions_for(user_id)
+      subs = []
+      @subscriptors.each do |key, s|
+        subs.push key if s[:user_id] == user_id
+      end
+      return subs
+    end
+
+    # Return unique subscriptos
+    # Each user can connect from many sources
+    # each with their own subscription_id
+    # @return [Array] with presence hash for unique user
+    def unique_subscriptors
+      h = { }
+      @subscriptors.each_value do |s|
+        h[s[:user_id]] = s
+      end
+      h.values
+    end
+
     # Send the given message to all connections subscribed
     def publish(message)
       @broker.publish message
