@@ -72,17 +72,18 @@ module Neighborparrot
     # and send the current user list to the new connection
     def fire_presence_open_events(endpoint, channel)
       channel_name = channel.name
-      already_logged = channel.subscriptions_for(endpoint.presence[:user_id]).length > 1
-
+      presence_info = endpoint.presence_info
+      already_logged = channel.subscriptions_for(presence_info[:user_id]).length > 1
+      invisible = presence_info[:invisible]
       # Send the connection open to other peers
-      unless already_logged
-        channel.publish presence_message_generate(channel_name, 'open', endpoint.presence)
+      unless already_logged || invisible
+        channel.publish presence_message_generate(channel_name, 'open', presence_info)
       end
 
       # And send to this peer other connections status
-      channel.unique_subscriptors.each do |subscriptor|
-        unless subscriptor[:user_id] == endpoint.presence[:user_id] && !already_logged
-          endpoint.send_to_client presence_message_generate(channel_name, 'open', subscriptor)
+      channel.unique_subscriptors.each do |s|
+        if (s[:user_id] != presence_info[:user_id] && !s[:invisible]) || already_logged
+          endpoint.send_to_client presence_message_generate(channel_name, 'current', s)
         end
       end
     end
@@ -91,11 +92,12 @@ module Neighborparrot
     # and fire the close web callback if configured
     def fire_presence_close_events(endpoint, channel)
       channel_name = channel.name
-      already_logged = channel.subscriptions_for(endpoint.presence[:user_id]).length > 0
+      presence_info = endpoint.presence_info
+      already_logged = channel.subscriptions_for(presence_info[:user_id]).length > 0
 
       # Send the connection close to other peers
-      unless already_logged
-        channel.publish presence_message_generate(channel_name, 'close', endpoint.presence)
+      unless already_logged || presence_info[:invisible]
+        channel.publish presence_message_generate(channel_name, 'close', presence_info)
         # TODO: fire web callbacks
       end
     end
@@ -107,7 +109,7 @@ module Neighborparrot
         :data => {
           :user_id => subscriptor[:user_id],
           :action => action,
-          :presence_data => subscriptor[:presence_data]
+          :data => subscriptor[:data]
         }
       }
     end

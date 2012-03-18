@@ -13,11 +13,16 @@ module Neighborparrot
   # Auth module.
   module Auth
     include Neighborparrot::Mongo
-    attr_reader :presence
+    attr_reader :presence_info
 
     # Return a unix UTC timestamp
     def current_timestamp
       Time.new.utc.to_i
+    end
+
+    # Generate a valid uuid string
+    def generate_uuid
+      UUIDTools::UUID.random_create.to_s
     end
 
     # Return true if valid signature
@@ -34,11 +39,10 @@ module Neighborparrot
     # and WebSocketEndPoint in response
     def validate_connection_params
       @api_id = env.params['auth_key']
-
-      user_id = env.params['user_id']
+      presence_user_id = env.params['presence_user_id'] || "*#{generate_uuid}*"
       presence_data = env.params['presence_data']
-      @presence = { :user_id => user_id, :presence_data => presence_data }
-
+      presence_invisible = env.params['presence_invisible'] == 'true'
+      @presence_info = { :user_id => presence_user_id, :data => presence_data, :invisible => presence_invisible }
       raise AuthError.new("api_id is mandatory") if @api_id.nil?
       raise AuthError.new("no signature") unless env.params['auth_signature']
     end

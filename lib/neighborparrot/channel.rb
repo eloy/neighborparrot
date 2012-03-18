@@ -22,7 +22,7 @@ module Neighborparrot
         block.call msg
       end
 
-      @subscriptors[subscription_id] = endpoint.presence
+      @subscriptors[subscription_id] = endpoint.presence_info
       return subscription_id
     end
 
