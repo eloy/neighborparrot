@@ -47,10 +47,12 @@ module Neighborparrot
     # Unsubscribe from current channel and call close_endpoint for
     # service depenent actions
     def on_close(env)
-      env.logger.debug "unsubscribe customer from channel #{@channel}"
-      if @application
+      if @authenticated
         @application.stat_connection_close
-        @application.unsubscribe(self, @channel, @subscription_id)
+        if @subscription_id
+          env.logger.debug "unsubscribe customer from channel #{@channel}"
+          @application.unsubscribe(self, @channel, @subscription_id)
+        end
       end
       close_endpoint
     end

@@ -41,11 +41,31 @@ module Neighborparrot
     def subscribe(endpoint, channel_name, &block)
       channel = get_channel(channel_name)
       subscription_id = channel.subscribe(endpoint, block)
-      if true # presence enabled
+
+      # Send presence events if configured
+      if @app_info['presence']
         EM.defer { fire_presence_open_events endpoint, channel }
       end
 
       return subscription_id
+    end
+
+    # Unsubscribe connection from channel
+    # Remove channel if no more users connected
+    # Remove application if no more apps
+    def unsubscribe(endpoint, channel_name, subscription_id)
+      channel = @channels[channel_name]
+      if channel
+        channel.unsubscribe(subscription_id)
+        EM.next_tick { cleanup_after_unsubscribe channel }
+        # Fire presence events if configured
+        if @app_info['presence']
+          EM.defer { fire_presence_close_events endpoint, channel }
+        end
+
+      else
+        logger.debug "Trying to unsubscribe for an inexistant channel #{channel_name}"
+      end
     end
 
     # Send the presence open events to the current channel users
@@ -90,23 +110,6 @@ module Neighborparrot
           :presence_data => subscriptor[:presence_data]
         }
       }
-    end
-
-    # Unsubscribe connection from channel
-    # Remove channel if no more users connected
-    # Remove application if no more apps
-    def unsubscribe(endpoint, channel_name, subscription_id)
-      channel = @channels[channel_name]
-      if channel
-        channel.unsubscribe(subscription_id)
-        EM.next_tick { cleanup_after_unsubscribe channel }
-        if true # presence enabled
-          EM.defer { fire_presence_close_events endpoint, channel }
-        end
-
-      else
-        logger.debug "Trying to unsubscribe for an inexistant channel #{channel_name}"
-      end
     end
 
     # Validations after unsubcribe

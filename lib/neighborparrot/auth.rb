@@ -63,6 +63,7 @@ module Neighborparrot
       if app_info && valid_signature?(app_info)
         @application.app_info = app_info
         logger.debug "LOGIN OK"
+        @authenticated = true
         return true
       end
       logger.debug "LOGIN FAILED for #{@api_id}"
