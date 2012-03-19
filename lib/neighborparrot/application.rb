@@ -8,10 +8,11 @@ module Neighborparrot
     include Neighborparrot::Stats
     include Neighborparrot::Logger
 
-    attr_accessor :api_id, :app_info
+    attr_accessor :api_id, :app_info, :channels
 
     # Global application Hash.
-    # Contains all the application instances indexed by api_id
+    # Contains all the application instances
+    # indexed by api_id
     @@applications = Hash.new
 
     # Initializer, setup app_info values
@@ -24,32 +25,93 @@ module Neighborparrot
     end
 
     # Remove application
-    # stop timers, flush stats and remove from current_applications
+    # stop timers, flush stats and remove
+    # from current_applications
     def destroy
       stop_stats
       @@applications.delete @api_id
     end
 
-    # Subscribe to desired channel and perform the block
-    # with msg arg
+    # Subscribe the endpoint to desired channel
+    # and perform the block with the msg as arg.
+    # If application has presence enabled, send the
+    # connect event to other peers and send the current
+    # users to the new connection.
     # @return [int] subscription_id for later disconnect
-    def subscribe(endpoint, &block)
-      channel = get_channel(endpoint.channel)
-      channel.subscribe(endpoint, block)
+    def subscribe(endpoint, channel_name, &block)
+      channel = get_channel(channel_name)
+      subscription_id = channel.subscribe(endpoint, block)
+
+      # Send presence events if configured
+      if @app_info['presence']
+        EM.defer { fire_presence_open_events endpoint, channel }
+      end
+
+      return subscription_id
     end
 
     # Unsubscribe connection from channel
     # Remove channel if no more users connected
     # Remove application if no more apps
-    def unsubscribe(channel_name, subscription_id)
+    def unsubscribe(endpoint, channel_name, subscription_id)
       channel = @channels[channel_name]
       if channel
         channel.unsubscribe(subscription_id)
         EM.next_tick { cleanup_after_unsubscribe channel }
-#        cleanup_after_unsubscribe channel
+        # Fire presence events if configured
+        if @app_info['presence']
+          EM.defer { fire_presence_close_events endpoint, channel }
+        end
+
       else
         logger.debug "Trying to unsubscribe for an inexistant channel #{channel_name}"
       end
+    end
+
+    # Send the presence open events to the current channel users
+    # and send the current user list to the new connection
+    def fire_presence_open_events(endpoint, channel)
+      channel_name = channel.name
+      presence_info = endpoint.presence_info
+      already_logged = channel.subscriptions_for(presence_info[:user_id]).length > 1
+      invisible = presence_info[:invisible]
+      # Send the connection open to other peers
+      unless already_logged || invisible
+        channel.publish presence_message_generate(channel_name, 'open', presence_info)
+      end
+
+      # And send to this peer other connections status
+      channel.unique_subscriptors.each do |s|
+        if (s[:user_id] != presence_info[:user_id] && !s[:invisible]) || already_logged
+          endpoint.send_to_client presence_message_generate(channel_name, 'current', s)
+        end
+      end
+    end
+
+    # Send the presence close events to the current channel users
+    # and fire the close web callback if configured
+    def fire_presence_close_events(endpoint, channel)
+      channel_name = channel.name
+      presence_info = endpoint.presence_info
+      already_logged = channel.subscriptions_for(presence_info[:user_id]).length > 0
+
+      # Send the connection close to other peers
+      unless already_logged || presence_info[:invisible]
+        channel.publish presence_message_generate(channel_name, 'close', presence_info)
+        # TODO: fire web callbacks
+      end
+    end
+
+    # Generate a presence open mesage
+    def presence_message_generate(channel_name, action, subscriptor)
+      presence_channel = "#{channel_name}-presence"
+      a = { :channel => presence_channel,
+        :data => {
+          :user_id => subscriptor[:user_id],
+          :action => action,
+          :data => subscriptor[:data]
+        }
+      }
     end
 
     # Validations after unsubcribe

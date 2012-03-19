@@ -12,6 +12,7 @@ require 'goliath/test_helper'
 require 'goliath/websocket'
 require 'em-http-request'
 require 'em-eventsource'
+require 'log4r'
 
 # Requires supporting files with custom matchers and macros, etc,
 # in ./support/ and its subdirectories.

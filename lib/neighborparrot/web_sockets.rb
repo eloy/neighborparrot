@@ -1,5 +1,3 @@
-#require 'goliath/websocket'
-
 class WebSocketEndPoint < Goliath::WebSocket
   include Neighborparrot::Connection
   include Neighborparrot::Auth
@@ -31,12 +29,13 @@ class WebSocketEndPoint < Goliath::WebSocket
   def send_to_client(msg)
     @env.trace 'sending_chunk'
     # @env.logger.debug "Send message #{msg} to connection X in channel #{@channel}"
-    @env.stream_send msg
+    msg.delete(:id) #Users don't need message id
+    @env.stream_send msg.to_json
   end
 
   def on_message(env, message)
     env.logger.debug("Begin WebSocket message.")
-    @application.send_message_to_channel @channel, message
+    prepare_send_request message
   end
 
   def on_error(env, error)

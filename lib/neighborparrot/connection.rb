@@ -1,4 +1,5 @@
 module Neighborparrot
+
   # Subscriber connection representation
   module Connection
     attr_reader :channel, :application
@@ -17,7 +18,7 @@ module Neighborparrot
       @application.stat_connection_open
       @channel = env.params['channel']
       logger.debug "Connected to channel #{@channel}"
-      subscribe
+      subscribe @channel
     end
 
     # Prepare output queue
@@ -34,44 +35,45 @@ module Neighborparrot
     end
 
     # Subscribe to desired channel
-    def subscribe
+    def subscribe(channel)
       @env.trace 'subscribing'
-      @subscription_id = @application.subscribe(self) do |msg|
+      @subscription_id = @application.subscribe(self, channel) do |msg|
         @queue.push msg
       end
+      @subscription_id
     end
 
     # Called when close connection
     # Unsubscribe from current channel and call close_endpoint for
     # service depenent actions
     def on_close(env)
-      env.logger.debug "unsubscribe customer from channel #{@channel}"
-      if @application
+      if @authenticated
         @application.stat_connection_close
-        @application.unsubscribe(@channel, @subscription_id)
+        if @subscription_id
+          env.logger.debug "unsubscribe customer from channel #{@channel}"
+          @application.unsubscribe(self, @channel, @subscription_id)
+        end
       end
       close_endpoint
     end
 
     # Handle send request
-    def prepare_send_request(env)
-      env.trace 'prepare send request'
+    def prepare_send_request(data=nil)
+      data = data || @data
       # @application.stat_connection_open
-      event_id = env.params['event_id'] || generate_message_id
-      data = env.params['data']
-      message = pack_message_event(event_id, data) # TODO Distict packing for event source
-      channel = env.params['channel']
-      send_to_broker channel, message
+      event_id = generate_message_id
+      message = { :id => event_id, :data => data, :channel => @channel }
+      send_to_broker message
       return event_id
     end
 
     # Send the message to the broker for
     # broadcast to other clients
-    def send_to_broker(channel, message)
+    def send_to_broker(message)
       env.trace 'sending to broker'
-      logger.debug "Sending message to channel #{channel}"
+      logger.debug "Sending message to channel #{@channel}"
       EM.next_tick do
-        @application.send_message_to_channel channel, message
+        @application.send_message_to_channel @channel, message
         env.trace 'sended to broker'
       end
     end
@@ -79,11 +81,6 @@ module Neighborparrot
     # Generate the message ID to be used as incoming reguest
     def generate_message_id
       @@next_message_id += 1
-    end
-
-    # Prepare a message as data message
-    def pack_message_event(event_id, data)
-      return "id:#{event_id}\ndata:#{data}\n\n"
     end
   end
 end

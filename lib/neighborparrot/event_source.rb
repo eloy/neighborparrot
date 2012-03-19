@@ -19,9 +19,17 @@ class EventSourceEndPoint < Goliath::API
     @env.chunked_stream_close
   end
 
+  # Prepare a message as data message
+  def pack_event_source_message(message)
+    id = message.delete(:id)
+    return "id:#{message[:id]}\ndata:#{message.to_json}\n\n"
+  end
+
+  # Last step in the message live,
+  # just send the message to the client stream
   def send_to_client(msg)
-    env.trace 'sending_chunk'
-    @env.chunked_stream_send msg
+    @env.trace 'sending_chunk'
+    @env.chunked_stream_send pack_event_source_message msg
   end
 
   def initialize_connection(env)

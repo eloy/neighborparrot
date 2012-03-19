@@ -7,7 +7,7 @@ module Neighborparrot
 
     def mongo_connect
       db_name = 'nparrot'
-      db_name << '-test' if Goliath.env == :test
+      db_name << '-test' if  Neighborparrot.test?
       @@db = EM::Mongo::Connection.new('localhost').db(db_name)
     end
 
