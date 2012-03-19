@@ -7,10 +7,12 @@ class window.Parrot
   @debug = false
 
 
-  # Local!! remove it in production!!
-  @brokerHost = "http://localhost:9000"
-  @WEBSOCKET_SERVER = "ws://localhost:9000"
-  @ASSETS_SERVER = "http://localhost:9000"
+  # Local tests !! remove it in production!!
+  # -------------------------------------
+  #
+  # @brokerHost = "http://localhost:9000"
+  # @WEBSOCKET_SERVER = "ws://localhost:9000"
+  # @ASSETS_SERVER = "http://localhost:9000"
 
 
   # Parrot constructot
