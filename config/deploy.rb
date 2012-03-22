@@ -61,7 +61,7 @@ namespace :deploy do
     run "cd #{release_path} && bundle install --without=test development --deployment"
     # Precompile assets
     run "mkdir #{release_path}/public/js"
-    run "cd #{release_path} && bundle exec rake precompile_assets"
+    run "cd #{release_path} && bundle exec rake assets_precompile"
   end
 
   after "deploy:update_code", "deploy:prepare_app"

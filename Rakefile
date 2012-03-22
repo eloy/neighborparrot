@@ -34,7 +34,7 @@ Rake::RDocTask.new do |rdoc|
   rdoc.rdoc_files.include('lib/**/*.rb')
 end
 
-task :precompile_assets do
+task :assets_precompile do
   coffee_path = "coffee/src"
   out_path = "public/js"
   Dir.new(coffee_path).each do |file|
