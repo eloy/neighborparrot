@@ -37,6 +37,7 @@ end
 task :assets_precompile do
   coffee_path = "coffee/src"
   out_path = "public/js"
+  Dir::mkdir out_path unless Dir::exists? out_path
   Dir.new(coffee_path).each do |file|
     if file.match '.coffee'
       coffee_file = "#{coffee_path}/#{file}"
