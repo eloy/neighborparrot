@@ -39,10 +39,14 @@ module Neighborparrot
     # and WebSocketEndPoint in response
     def validate_connection_params
       @api_id = env.params['auth_key']
+
+      # Setup presence values althought presence not enabled
+      # This will generate a unique-uuid for each connection
       presence_user_id = env.params['presence_user_id'] || "*#{generate_uuid}*"
       presence_data = env.params['presence_data']
       presence_invisible = env.params['presence_invisible'] == 'true'
       @presence_info = { :user_id => presence_user_id, :data => presence_data, :invisible => presence_invisible }
+
       raise AuthError.new("api_id is mandatory") if @api_id.nil?
       raise AuthError.new("no signature") unless env.params['auth_signature']
     end
@@ -62,12 +66,16 @@ module Neighborparrot
 
     # Should be called in Synchrony
     def authenticate
-      @application = Neighborparrot::Application.get_application @api_id
+      # Retrive data for auth
       app_info = mongo_db.collection('app_info').first(:api_id => @api_id)
+
+      pp app_info
+
       if app_info && valid_signature?(app_info)
-        @application.app_info = app_info
-        logger.debug "LOGIN OK"
+        @application = Neighborparrot::Application.get_application app_info
+        # @application.app_info = app_info
         @authenticated = true
+        logger.debug "LOGIN OK"
         return true
       end
       logger.debug "LOGIN FAILED for #{@api_id}"

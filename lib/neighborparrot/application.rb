@@ -1,14 +1,14 @@
-require 'pp'
 module Neighborparrot
 
   # Customer application model
   # Mantain application data, channels and users
-  # store persistent data like max connections and in mongodb
+  # store persistent data like max connections
   class Application
     include Neighborparrot::Stats
     include Neighborparrot::Logger
 
-    attr_accessor :api_id, :app_info, :channels
+    attr_accessor :api_id, :channels
+    attr_reader :app_info
 
     # Global application Hash.
     # Contains all the application instances
@@ -16,9 +16,9 @@ module Neighborparrot
     @@applications = Hash.new
 
     # Initializer, setup app_info values
-    def initialize(api_id)
-      @api_id = api_id
-      @app_info = nil
+    def initialize(app_info)
+      @api_id = app_info['api_id']
+      @app_info = app_info
       @channels = {}
       initialize_stats
       logger.debug "Created application"
@@ -130,11 +130,15 @@ module Neighborparrot
     # or nil if api_id do not correspond with any app
     # @param [String] api_id
     # @return [Application] application
-    def self.get_application(api_id)
+    def self.get_application(app_info)
+      api_id = app_info['api_id']
       app = @@applications[api_id]
+
       return app unless app.nil?
-      @@applications[api_id] = Application.new(api_id)
+
+      @@applications[api_id] = Application.new(app_info)
     end
+
 
     # Get or create a channel
     def get_channel(name)
