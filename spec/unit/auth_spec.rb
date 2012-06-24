@@ -74,10 +74,9 @@ describe Neighborparrot::Auth do
     end
 
     it 'should set instance vars' do
-      @auth.env.stub(:params) { { 'auth_key' => 'test', 'socket_id' => '123456', 'auth_signature' => 'md5', 'timestamp' => 1234 } }
+      @auth.env.stub(:params) { { 'auth_key' => 'test', 'auth_signature' => 'md5', 'timestamp' => 1234 } }
       @auth.validate_connection_params
       @auth.api_id.should eq 'test'
-      @auth.socket_id.should eq '123456'
     end
   end
 
@@ -90,14 +89,14 @@ describe Neighborparrot::Auth do
       @app = factory_application @auth.env, @app_info
       @request = factory_connect_request @app_info
     end
-
-    it 'should call block if valid signature' do
+    # TODO Real example for authentication
+    xit 'should call block if valid signature' do
       @auth.env.stub(:params) { Hash.new }
       app_info = factory_app_info
       @auth.api_id = app_info['api_id']
       @auth.stub(:valid_signature?) { true }
 
-      EM.run do
+      EM.synchrony  do
         mongo_db.collection('app_info').insert app_info
         @auth.auth_request do | application |
           application.api_id.should eq app_info['api_id']

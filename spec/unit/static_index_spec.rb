@@ -139,7 +139,7 @@ describe StaticIndexEndPoint do
     it 'should return the websocket template if service is ws' do
       @s.service = 'ws'
       @s.template_env = StaticIndexEndPoint::TemplateEnv.new
-      @s.parse_template.should match 'WSBroker'
+      @s.parse_template.should match 'Web Socket service'
     end
 
     it 'should return the websocket polyfill if service is ws and use_polyfill true' do
@@ -147,14 +147,14 @@ describe StaticIndexEndPoint do
       template_env.use_polyfill = true
       @s.service = 'ws'
       @s.template_env = template_env
-      @s.parse_template.should match 'websocket.js'
+      @s.parse_template.should match 'web_socket.js'
     end
 
     it 'should return the event source template if service is es' do
       template_env = StaticIndexEndPoint::TemplateEnv.new
       @s.service = 'es'
       @s.template_env = StaticIndexEndPoint::TemplateEnv.new
-      @s.parse_template.should match 'ESBroker'
+      @s.parse_template.should match 'Event Source service'
     end
 
     it 'should return the eventsource polyfill if service is es and use_polyfill true' do

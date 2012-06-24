@@ -13,7 +13,6 @@ describe 'Event source connection' do
       request = factory_connect_request app_info
       with_api(Router, { :verbose => true, :log_stdout => true}) do
         mongo_db.collection('app_info').insert app_info # Store mongo fixature after start EM
-        s.logger.debug "Hola"
         request_data = { :path => '/open', :query => request[:params], :keep_alive => true }
 
         aget_request(request_data, err) do |c|

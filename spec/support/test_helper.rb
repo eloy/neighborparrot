@@ -48,7 +48,7 @@ def factory_application(env, app_info=nil)
   Neighborparrot::Application.any_instance.stub(:create_push_timer) { true }
   Neighborparrot::Application.any_instance.stub(:stop_stats) { true }
   Neighborparrot::Application.any_instance.stub(:logger) { double('logger').as_null_object }
-  app = Neighborparrot::Application.new(app_info['api_id'])
+  app = Neighborparrot::Application.new(app_info)
   return app
 end
 
